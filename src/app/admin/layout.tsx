@@ -1,5 +1,5 @@
 import {Bars3Icon} from "@heroicons/react/24/outline";
-import AdminNav from "@/components/server/AdminNav";
+import AdminNav from "@/components/ui/AdminNav";
 import Avatar from "@/components/server/Avatar";
 
 const AdminLayout = ({children}: { children: React.ReactNode }) => (

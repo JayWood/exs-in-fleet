@@ -1,6 +1,6 @@
 const AdminNav = () => (
   <>
-    <li><a>Dashboard</a></li>
+    <li><a href='/admin'>Dashboard</a></li>
     <li><a>Add Character</a></li>
   </>
 );
