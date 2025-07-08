@@ -2,6 +2,9 @@
 
 import CardMedium from "@/components/ui/CardMedium";
 import Table from "@/components/ui/Table";
+import {ChevronDownIcon, ChevronUpIcon} from "@heroicons/react/16/solid";
+import Chevron from "@/components/ui/Chevron";
+import Link from "next/link";
 
 interface Item {
   typeId: number;
@@ -42,25 +45,33 @@ const PriceComparison = ( {title, sourceSystem, targetSystem, prices}: PriceComp
       <div className="overflow-x-auto">
         <table className="table table-xs table-zebra">
           <thead>
-          <tr>
-            <th>Name</th>
-            <th>{ `${sourceSystem.name} Min-Sell` }</th>
-            <th>{ `${targetSystem.name} Stock` }</th>
-            <th>{ `${targetSystem.name} Min-Sell` }</th>
-            <th>{ `${targetSystem.name} Diff %` }</th>
-          </tr>
+            <tr>
+              <th>Name</th>
+              <th>{ `${sourceSystem.name} Min-Sell` }</th>
+              <th>{ `${targetSystem.name} Stock` }</th>
+              <th>{ `${targetSystem.name} Min-Sell` }</th>
+              <th>{ `${targetSystem.name} Diff %` }</th>
+            </tr>
           </thead>
           <tbody>
           {
-            prices?.map( ({source, target, targetStock, item}: PriceData, index ) => (
-              <tr key={index}>
-                <td>{item.name}</td>
-                <td>{source.toLocaleString()}</td>
-                <td>{targetStock.toLocaleString()}</td>
-                <td>{target.toLocaleString()}</td>
-                <td>{calculateDiffPercentage(target, source)}</td>
-              </tr>
-            ) )
+            prices?.map( ({source, target, targetStock, item}: PriceData, index ) => {
+              const calculation = calculateDiffPercentage(target, source);
+              const calculationClass = calculation > 10 ? "text-red-500" : calculation < 0 ? "text-green-500" : null;
+              return (
+                <tr key={index}>
+                  <td><Link className="link" href={`https://evetycoon.com/market/${item.typeId}`} target="_blank">{item.name}</Link></td>
+                  <td>{source.toLocaleString()}</td>
+                  <td>{targetStock.toLocaleString()}</td>
+                  <td>{target.toLocaleString()}</td>
+                  <td className="flex">
+                    <Chevron median={0} buffer={10} maxBuffer={20} value={calculation}>
+                      {calculation}%
+                    </Chevron>
+                  </td>
+                </tr>
+              )
+            } )
           }
           </tbody>
         </table>

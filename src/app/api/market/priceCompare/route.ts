@@ -29,7 +29,7 @@ export function getPriceComparison( props?: priceCompareParams ) {
     },
     {
       "source": 40000,
-      "target": 49500,
+      "target": 20000,
       "targetStock": 3267,
       "item": {
         "name": "Fusion Thruster",
@@ -47,7 +47,7 @@ export function getPriceComparison( props?: priceCompareParams ) {
     },
     {
       "source": 47840,
-      "target": 63790,
+      "target": 46000,
       "targetStock": 9648,
       "item": {
         "name": "Linear Shield Emitter",
@@ -74,7 +74,7 @@ export function getPriceComparison( props?: priceCompareParams ) {
     },
     {
       "source": 59360,
-      "target": 69010,
+      "target": 33,
       "targetStock": 10468,
       "item": {
         "name": "Tesseract Capacitor Unit",
@@ -83,7 +83,7 @@ export function getPriceComparison( props?: priceCompareParams ) {
     },
     {
       "source": 9113,
-      "target": 11720,
+      "target": 9122,
       "targetStock": 189937,
       "item": {
         "name": "Tungsten Carbide Armor Plate",
