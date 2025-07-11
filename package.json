@@ -10,12 +10,14 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
+    "apexcharts": "^5.0.0",
     "axios": "^1.10.0",
     "clsx": "^2.1.1",
     "dotenv": "^17.0.1",
     "jose": "^6.0.11",
     "mongodb": "^6.17.0",
     "next": "15.3.5",
+    "prettier": "^3.6.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

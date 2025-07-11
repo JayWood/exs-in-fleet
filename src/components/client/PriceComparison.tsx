@@ -57,7 +57,6 @@ const PriceComparison = ( {title, sourceSystem, targetSystem, prices}: PriceComp
           {
             prices?.map( ({source, target, targetStock, item}: PriceData, index ) => {
               const calculation = calculateDiffPercentage(target, source);
-              const calculationClass = calculation > 10 ? "text-red-500" : calculation < 0 ? "text-green-500" : null;
               return (
                 <tr key={index}>
                   <td><Link className="link" href={`https://evetycoon.com/market/${item.typeId}`} target="_blank">{item.name}</Link></td>

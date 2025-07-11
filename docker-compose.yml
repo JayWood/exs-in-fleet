@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  db:
+    image: mongo:6.0
+    container_name: mongodb
+    restart: always
+    ports:
+      - "27017:27017"  # Exposes MongoDB on localhost
+    volumes:
+      - mongo-data:/data/db
+      - ./csvFiles:/tmp/csvFiles
+
+volumes:
+  mongo-data:
