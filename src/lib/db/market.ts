@@ -1,12 +1,17 @@
 import {createProjection, readMany} from "@/lib/db/mongoHelpers";
 import {Filter} from "mongodb";
-import {InvType} from "@/lib/db/collections";
+import {InvMarketGroup, InvMarketGroupDocument, InvType, InvTypeDocument} from "@/lib/db/collections";
 
 export async function getMarketLayout() {
-    const marketDocumentFilter: Filter<InvType> = {
+    const invTypeFilter: Filter<InvType> = {
         published: 1,
         marketGroupID: {$ne: "None"}
     };
-    const projection = createProjection<InvType>(['typeID', 'typeName', 'marketGroupID', 'iconID'])
-    const invTypes = readMany('invTypes', marketDocumentFilter, projection);
+    const invTypeProjection = createProjection<InvType>(['typeID', 'typeName', 'marketGroupID', 'iconID'])
+    const marketProjection = createProjection<InvMarketGroup>(['marketGroupID','marketGroupName','parentGroupID','iconID']);
+
+    const [invTypes, marketGroups] = await Promise.all( [
+        readMany<InvTypeDocument>('invTypes', invTypeFilter, invTypeProjection),
+        readMany<InvMarketGroupDocument>( 'marketGroups', {}, marketProjection )
+    ] )
 }
