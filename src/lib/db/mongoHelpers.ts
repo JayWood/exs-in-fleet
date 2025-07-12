@@ -49,8 +49,20 @@ async function deleteOne(
     return db.collection(collection).deleteOne(filter)
 }
 
+/**
+ * Accepts an array of fields to return from a document and creates a projection object for those fields.
+ * @param fields
+ */
+function createProjection<T extends object>(fields: (keyof T)[]): Record<keyof T, 1> {
+    return fields.reduce((proj, field) => {
+        proj[field] = 1
+        return proj
+    }, {} as Record<keyof T, 1>)
+}
+
 
 export {
+    createProjection,
     createOne,
     readOne,
     readMany,
