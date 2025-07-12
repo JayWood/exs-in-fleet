@@ -1,4 +1,4 @@
-import { WithId } from 'mongodb'
+import {OptionalUnlessRequiredId, WithId} from 'mongodb'
 
 export type User = {
     access_token: string
@@ -129,3 +129,28 @@ export interface RamAssemblyLineType {
     volume: number
 }
 export type RamAssemblyLineTypeDocument = WithId<RamAssemblyLineType>
+
+export interface ManufacturingBatchType {
+    name?: string;                     // Optional name (e.g. "July Rigs Run")
+    createdAt: Date;                   // When this batch was created
+    inputTotal: number;                // Raw materials cost
+    taxTotal: number;                  // Total taxes paid
+    usageTotal: number;                // Facility fees, etc.
+    productLogIds: ObjectId[];         // References to ProductLog._id
+    notes?: string;                    // Optional notes
+}
+export type ManufacturingBatchTypeDocument = WithId<ManufacturingBatchType>;
+export type ManufacturingBatchTypeInsert = OptionalUnlessRequiredId<ManufacturingBatchType>;
+
+interface ProductLogType {
+    typeID: number;          // FK to invTypes.typeID
+    batchID: ObjectId;       // FK to ManufacturingBatch._id
+    createdAt: Date;         // When this log entry was created
+    quantity: number;        // Quantity produced in this log
+    unitCost: number;        // Per-unit manufacturing cost
+    totalCost: number;       // unitCost * quantity (for redundancy / aggregation)
+    notes?: string;          // Optional notes for the entry
+}
+
+export type ProductLogTypeDocument = WithId<ProductLogType>;
+export type ProductLogTypeInsert = OptionalUnlessRequiredId<ProductLogType>;
