@@ -154,3 +154,60 @@ interface ProductLogType {
 
 export type ProductLogTypeDocument = WithId<ProductLogType>;
 export type ProductLogTypeInsert = OptionalUnlessRequiredId<ProductLogType>;
+
+
+export interface ManufacturingBatchType {
+    name?: string;                     // Optional name (e.g. "July Rigs Run")
+    createdAt: Date;                   // When this batch was created
+    inputTotal: number;                // Raw materials cost
+    taxTotal: number;                  // Total taxes paid
+    usageTotal: number;                // Facility fees, etc.
+    productLogIds: ObjectId[];         // References to ProductLog._id
+    notes?: string;                    // Optional notes
+}
+
+export type ManufacturingBatchTypeDocument = WithId<ManufacturingBatchType>;
+export type ManufacturingBatchTypeInsert = OptionalUnlessRequiredId<ManufacturingBatchType>;
+
+
+export interface ProductLogType {
+    typeID: number;          // FK to invTypes.typeID
+    batchID: ObjectId;       // FK to ManufacturingBatch._id
+    createdAt: Date;         // When this log entry was created
+    quantity: number;        // Quantity produced in this log
+    unitCost: number;       // Per-unit manufacturing cost
+    totalCost: number;       // unitCost * quantity (redundant but useful)
+    notes?: string;          // Optional notes
+}
+
+export type ProductLogTypeDocument = WithId<ProductLogType>;
+export type ProductLogTypeInsert = OptionalUnlessRequiredId<ProductLogType>;
+
+
+export interface OrderType {
+    batchID: ObjectId;          // FK to ManufacturingBatch._id
+    orderNumber?: string;       // External or internal order number
+    type: 'purchase' | 'sale';  // Order type
+    status: 'pending' | 'partial' | 'completed' | 'canceled';
+    createdAt: Date;
+    updatedAt?: Date;
+    notes?: string;
+}
+
+export type OrderTypeDocument = WithId<OrderType>;
+export type OrderTypeInsert = OptionalUnlessRequiredId<OrderType>;
+
+
+export interface OrderTransactionType {
+    orderID: ObjectId;          // FK to Order._id
+    productLogID?: ObjectId;    // Optional FK to ProductLog._id
+    date: Date;
+    itemTypeID?: number;        // FK to invTypes.typeID (optional fallback)
+    quantity?: number;
+    unitPrice?: number;
+    totalPrice: number;
+    notes?: string;
+}
+
+export type OrderTransactionTypeDocument = WithId<OrderTransactionType>;
+export type OrderTransactionTypeInsert = OptionalUnlessRequiredId<OrderTransactionType>;
