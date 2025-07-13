@@ -3,10 +3,12 @@ import {
     EvePayload,
     refreshToken,
     UserRecord,
-} from '@/lib/eve-auth'
-import { createDocument, readDocument, updateDocument } from './mongodb'
+} from '@/lib/authEveOnline'
 import { WithId } from 'mongodb'
-import { User } from '@/lib/db/collections'
+import {User, UserDocument, UserInsert} from '@/lib/db/collections'
+import {readOne, updateOne} from "@/lib/db/mongoHelpers";
+
+export const collection: string = 'eveUsers';
 
 export const updateUser = async (
     decoded: EvePayload,
@@ -18,7 +20,7 @@ export const updateUser = async (
     const playerId = parseInt(sub[sub.length - 1])
 
     // Now write the document.
-    const document = {
+    const document: UserInsert = {
         access_token,
         refresh_token,
         expiration: decoded.exp as number,
@@ -27,26 +29,19 @@ export const updateUser = async (
         parentPlayerId,
     }
 
-    return await updateDocument(
-        { playerId: playerId },
-        COLLECTION_USERS,
-        document as User
-    )
+    return await updateOne<UserInsert>( collection, { playerId }, document, { upsert: true } )
 }
 
 /**
  * Gets the EvE Online Access token for a user if one is on file.
- * @param userID
+ * @param playerId
  */
-export const getUserToken = async (userID: number) => {
-    const userRecord = await readDocument(
-        { playerId: userID },
-        COLLECTION_USERS
-    )
+export const getUserToken = async (playerId: number): Promise<UserDocument | null> => {
+    const userRecord = await readOne<UserDocument | null>( collection, { playerId } );
 
     if (!userRecord) {
         throw new Error('Error for user.')
     }
 
-    return userRecord as WithId<UserRecord>
+    return userRecord;
 }

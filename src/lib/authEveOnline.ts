@@ -12,8 +12,6 @@ const OAUTH_URL = 'https://login.eveonline.com/v2/oauth/'
 const AUTH_URL = OAUTH_URL + 'authorize/'
 const TOKEN_URL = OAUTH_URL + 'token/'
 
-export const COLLECTION_USERS = 'eveUsers'
-
 export type CodeResponse = {
     access_token: string
     expires_in: number
@@ -46,7 +44,7 @@ export type EvePayload = {
     iss: string
 }
 
-const SCOPES = [
+const oAuthScopes = [
     'esi-wallet.read_character_wallet.v1',
     'esi-wallet.read_corporation_wallet.v1',
     'esi-assets.read_assets.v1',
@@ -68,7 +66,7 @@ export const getEveUrl = (state?: string, scopes?: string[]): string => {
         response_type: 'code',
         redirect_uri: EVE_CALLBACK_URL,
         client_id: CLIENT_ID,
-        scope: scopes ? scopes.join(' ') : SCOPES.join(' '),
+        scope: scopes ? scopes.join(' ') : oAuthScopes.join(' '),
         state: state ?? 'eve-auth',
     }
 
@@ -150,7 +148,6 @@ export const validateAccessToken = async (
         .jwtVerify(access_token, JWKS, {
             audience: 'EVE Online',
             issuer: ['https://login.eveonline.com', 'login.eveonline.com'],
-            ignoreExpiration: true,
         })
         .catch((error) => {
             throw error

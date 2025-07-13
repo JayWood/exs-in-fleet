@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers'
-import { validateAccessToken } from '@/lib/eve-auth'
+import { validateAccessToken } from '@/lib/authEveOnline'
 import { NextRequest, NextResponse } from 'next/server'
 
 const ESIBase = 'https://esi.evetech.net/'

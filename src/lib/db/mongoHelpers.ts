@@ -33,12 +33,14 @@ async function readMany<T extends {}>(
 async function updateOne<T extends {}>(
     collection: string,
     filter: Record<string, any>,
-    update: Partial<T>
+    update: Partial<T>,
+    options: { upsert?: boolean } = {}
 ) {
     const client = await clientPromise;
     const db = client.db();
-    return db.collection<T>(collection).updateOne(filter, { $set: update })
+    return db.collection<T>(collection).updateOne(filter, { $set: update }, options);
 }
+
 
 async function deleteOne(
     collection: string,

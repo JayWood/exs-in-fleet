@@ -1,14 +1,5 @@
 import {OptionalUnlessRequiredId, WithId} from 'mongodb'
 
-export type User = {
-    access_token: string
-    refresh_token: string
-    expiration: number
-    name: string
-    playerId: number
-    parentPlayerId?: number
-}
-
 export type IndustryActivityMaterial = {
     activityID: number;
     materialTypeID: number;
@@ -211,3 +202,15 @@ export interface OrderTransactionType {
 
 export type OrderTransactionTypeDocument = WithId<OrderTransactionType>;
 export type OrderTransactionTypeInsert = OptionalUnlessRequiredId<OrderTransactionType>;
+
+export type User = {
+    access_token: string
+    refresh_token: string
+    expiration: number
+    name: string
+    playerId: number
+    parentPlayerId?: number
+}
+
+export type UserDocument = WithID<User>;
+export type UserInsert = OptionalUnlessRequiredId<User>;

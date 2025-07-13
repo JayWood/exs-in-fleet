@@ -1,19 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { redirect, useSearchParams } from 'next/navigation'
-import { getEveUrl, exchangeCode, validateToken } from '@/lib/eve-auth'
-import { updateUser } from '@/lib/db'
+import { getEveUrl, exchangeCode, validateToken } from '@/lib/authEveOnline'
+import { updateUser } from '@/lib/db/user'
+import * as url from "node:url";
 
 type queryParams = {
   params: Promise<{ type: 'login' | 'callback' | 'testing' }>
 }
 
-type eveState = Record<string, any>
+type eveState = {
+  reqType: 'login' | 'addCharacter';
+  redirectTo: string ;
+  nonce: string;
+}
 
 const encode = (jsonObject: object): string => {
   return Buffer.from(JSON.stringify(jsonObject)).toString('base64')
 }
 
-const decode = (encodedString: string) => {
+const decode = <T>(encodedString: string): T => {
   return JSON.parse(Buffer.from(encodedString, 'base64').toString())
 }
 
@@ -21,9 +25,15 @@ const decode = (encodedString: string) => {
  * Logs the user in based on the request data if possible.
  * @param request
  * @param state
+ *
  */
-const login = async (request: NextRequest, state?: Record<string, any>) => {
-  const result = await exchangeCode(request.nextUrl.searchParams.get('code'))
+const processLoginRequest = async (request: NextRequest, state: eveState ) => {
+  const code = request.nextUrl.searchParams.get('code');
+  if ( ! code ) {
+    return NextResponse.json( { error: 'Bad Request' }, { status: 400 } )
+  }
+
+  const result = await exchangeCode(code)
   const responseData = result.data
   const decodedToken = await validateToken(responseData)
 
@@ -35,13 +45,12 @@ const login = async (request: NextRequest, state?: Record<string, any>) => {
     responseData.refresh_token
   )
 
-  const response = NextResponse.redirect(new URL('/dashboard', request.url))
-  const oneDay = 24 * 60 * 60 * 1000
+  const response = NextResponse.redirect( new URL( state.redirectTo, request.url ) )
   const playerId = decodedToken.sub.split(':')[2]
 
   response.cookies.set('token', responseData.access_token, {
     secure: 'production' === process.env.NODE_ENV,
-    expires: Date.now() + oneDay,
+    expires: new Date(decodedToken.exp * 1000),
     httpOnly: true,
     path: '/',
     sameSite: 'lax',
@@ -49,7 +58,7 @@ const login = async (request: NextRequest, state?: Record<string, any>) => {
 
   response.cookies.set('character', `${decodedToken.name}|${playerId}`, {
     secure: 'production' === process.env.NODE_ENV,
-    expires: Date.now() + oneDay,
+    expires: new Date(decodedToken.exp * 1000),
     httpOnly: true,
     path: '/',
     sameSite: 'lax',
@@ -65,7 +74,7 @@ const login = async (request: NextRequest, state?: Record<string, any>) => {
  */
 const addCharacter = async (
   request: NextRequest,
-  state: { reqType: string; redirect: string }
+  state: eveState
 ) => {
   const code = request.nextUrl.searchParams.get('code')
   if (!code) {
@@ -85,39 +94,53 @@ const addCharacter = async (
    */
 }
 
-export async function POST(request: NextRequest, { params }: queryParams) {
-  const { type } = await params
-  console.log('made it')
-
-  if ('testing' === type) {
-    return NextResponse.json('Made it')
-  }
-
-  if ('login' !== type) {
-    return NextResponse.json({ error: 'Not Found' })
-  }
-
-  redirect(
-    getEveUrl(
-      encode({
-        reqType: 'login',
-      })
-    )
-  )
-}
-
 export async function GET(request: NextRequest, { params }: queryParams) {
   const { type } = await params
   const state = request.nextUrl?.searchParams?.get('state')
-  if ('callback' !== type || !state) {
+  const redirectTo = request.nextUrl?.searchParams?.get('redirectTo')
+
+  if ( ![ 'callback', 'login' ].includes(type)) {
     return NextResponse.json({ error: 'Not Found' }, { status: 404 })
   }
 
-  const decodedState = decode(state)
+
+  if ( 'login' === type ) {// Pseudocode for generating and storing the state
+    const stateObj: eveState = {
+      reqType: 'login',
+      redirectTo: redirectTo || '/admin',
+      nonce: crypto.randomUUID(),
+    };
+
+    // Serialize and encode it
+    const state = encode(stateObj);
+    const response = NextResponse.redirect(
+        getEveUrl( state )
+    )
+
+    response.cookies.set('oauth_state_nonce', stateObj.nonce, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+      maxAge: 300,
+    });
+
+    return response;
+  }
+
+  if ( ! state ) {
+    return NextResponse.json( { error: 'Bad Request' }, { status: 400 } );
+  }
+
+  const decodedState = decode<eveState>(state)
+  const expectedNonce = request.cookies.get('oauth_state_nonce')?.value;
+
+  if (!expectedNonce || decodedState.nonce !== expectedNonce) {
+    return NextResponse.json({ error: 'Invalid or mismatched state' }, { status: 403 });
+  }
 
   switch (decodedState?.reqType) {
     case 'login':
-      return await login(request, decodedState)
+      return await processLoginRequest(request, decodedState)
     case 'addCharacter':
       return await addCharacter(request, decodedState)
     default:
