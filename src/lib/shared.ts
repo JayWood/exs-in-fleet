@@ -3,7 +3,7 @@ import {IndustryActivityMaterial} from "@/lib/db/collections";
 export type eveImageTypes = {
     category: 'alliances' | 'corporations' | 'characters' | 'types';
     id: string | number;
-    variation?: 'render' | 'icon';
+    variation?: 'render' | 'icon' | 'portrait';
     size?: 32 | 64 | 128 | 256 | 512 | 1024;
 }
 
