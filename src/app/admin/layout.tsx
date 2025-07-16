@@ -4,14 +4,7 @@ import Avatar from "@/components/client/Avatar";
 import {cookies} from 'next/headers';
 import {eveImageUrl} from "@/lib/shared";
 
-/*
-TODO
-Test this setting it as a const, versus using export default async function.
-For somee reason when tested w/ setting it as a const, then exporting it, it was
-acting as a client component, and not server component. Therefore the httponly
-cookie could not be read.
- */
-export default async function AdminLayout ({children}: { children: React.ReactNode }) {
+const AdminLayout = async ({children}: { children: React.ReactNode }) => {
   const cookieStore = await cookies()
   const character = cookieStore.get('character')?.value;
 
@@ -52,3 +45,5 @@ export default async function AdminLayout ({children}: { children: React.ReactNo
     </div>
   )
 }
+
+export default AdminLayout;
