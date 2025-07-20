@@ -42,6 +42,13 @@ export class Router {
         return client.markets('structures', match[1]);
       },
       methods: ['GET'],
+    },
+    {
+      pattern: /^markets\/structures\/(\d+)\/aggregate$/,
+      handler: async (client, match) => {
+        return client.getAggregatedMarketStats( 'structures', match[1] );
+      },
+      methods: ['GET'],
     }
   ];
 
