@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   db:
     image: mongo:6.0
@@ -10,6 +8,7 @@ services:
     volumes:
       - mongo-data:/data/db
       - ./csvFiles:/tmp/csvFiles
+      - ./scripts:/usr/local/bin/scripts
 
 volumes:
   mongo-data:
