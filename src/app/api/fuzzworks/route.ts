@@ -26,4 +26,6 @@ export async function GET(request: NextRequest) {
             {status: 500}
         );
     }
+
+    // TODO: cache response data for 24 hours in 'market data' table by source
 }

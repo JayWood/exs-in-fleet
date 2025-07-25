@@ -204,7 +204,7 @@ export class Client {
   }
 
   async getAggregatedMarketStats(endpoint: string, structureId: string): Promise<NextResponse<AggregatedOrders>> {
-
+    // TODO: Move market table to a 'market data' collection. Store structure ID alongside market data.
     console.log('Checking database cache for market stats...');
     const collection = `market-${endpoint}-${structureId}`;
     if (!await collectionExists(collection)) {
