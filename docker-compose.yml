@@ -1,8 +1,8 @@
 services:
   db:
-    image: mongo:6.0
+    build: .
     container_name: mongodb
-    restart: always
+    restart: on-failure
     ports:
       - "27017:27017"  # Exposes MongoDB on localhost
     volumes:

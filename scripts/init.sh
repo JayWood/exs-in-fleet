@@ -4,14 +4,19 @@
 CSV_DIR="/tmp/csvFiles"
 
 # MongoDB connection settings
-MONGO_HOST="localhost"
-MONGO_PORT="27017"
-DATABASE_NAME="local"
+MONGO_HOST="${MONGO_HOST:-localhost}"
+MONGO_PORT="${MONGO_PORT:-27017}"
+DATABASE_NAME="${DATABASE_NAME:-local}"
 
 # Ensure mongoimport is available
 if ! command -v mongoimport &> /dev/null; then
     echo "Error: mongoimport is not installed. Please install mongodb-database-tools package."
     exit 1
+fi
+
+AUTH_OPTIONS=""
+if [[ -n "$MONGO_USER" && -n "$MONGO_PASS" ]]; then
+  AUTH_OPTIONS="--username \"$MONGO_USER\" --password \"$MONGO_PASS\" --authenticationDatabase admin"
 fi
 
 # Loop through all CSV files in the directory
@@ -29,7 +34,8 @@ for csv_file in "$CSV_DIR"/*.csv; do
             --type csv \
             --headerline \
             --file "$csv_file" \
-            --drop
+            --drop \
+            $AUTH_OPTIONS
 
         if [ $? -eq 0 ]; then
             echo "Successfully imported $filename"
