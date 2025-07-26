@@ -209,6 +209,7 @@ type StructureInfo = {
 }
 
 type PriceComparison = {
+    title: string;
     typeIds: number[];
     sourceStructure: StructureInfo["structureId"]
     targetStructure: StructureInfo["structureId"]
