@@ -1,21 +1,9 @@
 import {MarketOrder} from "@/types/esi/Markets";
-import {Client} from "@/lib/esi/Client";
+import {NextResponse} from "next/server";
+import {collectionExists, createCollection, createProjection, readMany, writeMany} from "@/lib/db/mongoHelpers";
+import {MarketCacheDocument} from "@/lib/db/collections";
 
-async function fetchAllMarketOrders(client: Client, endpoint: string, structureId: string, page = 1, allOrders: MarketOrder[] = []): Promise<MarketOrder[]> {
-  const res = await client.markets(endpoint, structureId + `/?page=${page}`);
-  const data = await res.json() as MarketOrder[];
-
-  const totalPages = parseInt(res.headers.get('x-pages') || '1');
-  const combined = [...allOrders, ...data];
-
-  if (page < totalPages) {
-    return fetchAllMarketOrders(client, endpoint, structureId, page + 1, combined);
-  } else {
-    return combined;
-  }
-}
-
-type OrderStats = {
+export type OrderStats = {
   weightedAverage: string;
   max: string;
   min: string;
@@ -28,12 +16,13 @@ type OrderStats = {
 
 export type AggregatedOrders = {
   [typeId: number]: {
+    structureId: string;
     buy: OrderStats;
     sell: OrderStats;
   };
 };
 
-function calculateStats(orders: MarketOrder[]): OrderStats {
+export function calculateStats(orders: MarketOrder[]): OrderStats {
   if (orders.length === 0) {
     return {
       weightedAverage: "0",
@@ -71,12 +60,12 @@ function calculateStats(orders: MarketOrder[]): OrderStats {
   };
 }
 
-function groupAndAggregate(orders: MarketOrder[]): AggregatedOrders {
+export function groupAndAggregate(orders: MarketOrder[], structureId: string): NextResponse<AggregatedOrders> {
   const grouped: Record<number, { buy: MarketOrder[]; sell: MarketOrder[] }> = {};
 
   for (const order of orders) {
     if (!grouped[order.type_id]) {
-      grouped[order.type_id] = { buy: [], sell: [] };
+      grouped[order.type_id] = {buy: [], sell: []};
     }
 
     if (order.is_buy_order) {
@@ -90,14 +79,24 @@ function groupAndAggregate(orders: MarketOrder[]): AggregatedOrders {
   for (const typeId in grouped) {
     const buyStats = calculateStats(grouped[typeId].buy);
     const sellStats = calculateStats(grouped[typeId].sell);
-    result[typeId] = { buy: buyStats, sell: sellStats };
+    result[typeId] = {buy: buyStats, sell: sellStats, structureId};
   }
 
-  return result;
+  return NextResponse.json(result);
 }
 
-export async function getAggregatedMarketStats(client: Client, endpoint: string, structureId: string): Promise<AggregatedOrders> {
-  const allOrders = await fetchAllMarketOrders(client, endpoint, structureId);
-  return groupAndAggregate(allOrders);
+export function marketCacheGet( filter: Record<string, any> = {}, fields?: string[] ): Promise<MarketCacheDocument[]> {
+  const projection = fields ? createProjection(fields) : undefined;
+  return readMany( 'marketCache', filter, projection );
 }
 
+export async function marketCacheSet( documents: AggregatedOrders[] ) {
+  if (!await collectionExists('marketCache')) {
+    await createCollection('marketCache', [{
+      key: {createdAt: 1},
+      options: {expireAfterSeconds: 24 * 60 * 60}
+    }]);
+
+    return writeMany( 'marketCache', documents );
+  }
+}

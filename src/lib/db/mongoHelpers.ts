@@ -103,6 +103,6 @@ export {
   writeMany,
   updateOne,
   deleteOne,
-    collectionExists,
-    createCollection,
+  collectionExists,
+  createCollection,
 };

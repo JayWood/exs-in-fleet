@@ -1,30 +1,8 @@
 import {CorporationWallet, CorporationWalletJournalEntry, CorporationWalletTransaction} from "@/types/esi/Wallet";
 import {NextRequest, NextResponse} from "next/server";
 import {MarketOrder} from "@/types/esi/Markets";
-import {collectionExists, createCollection, readMany, writeMany} from "@/lib/db/mongoHelpers";
-
-type IndexConfig = {
-  key: Record<string, 1 | -1>;
-  options?: Record<string, any>;
-};
-
-type OrderStats = {
-  weightedAverage: string;
-  max: string;
-  min: string;
-  stddev: string;
-  median: string;
-  volume: string;
-  orderCount: string;
-  percentile: string; // 95th percentile
-};
-
-export type AggregatedOrders = {
-  [typeId: number]: {
-    buy: OrderStats;
-    sell: OrderStats;
-  };
-};
+import {AggregatedOrders, groupAndAggregate, marketCacheGet, marketCacheSet} from "@/lib/market";
+import {MarketCache, MarketCacheDocument, MarketCacheInsert} from "@/lib/db/collections";
 
 export class Client {
   private baseUrl: string = 'https://esi.evetech.net/latest'
@@ -124,74 +102,11 @@ export class Client {
     return nextResponse;
   }
 
-  calculateStats(orders: MarketOrder[]): OrderStats {
-    if (orders.length === 0) {
-      return {
-        weightedAverage: "0",
-        max: "0",
-        min: "0",
-        stddev: "0",
-        median: "0",
-        volume: "0",
-        orderCount: "0",
-        percentile: "0"
-      };
-    }
-
-    const prices = orders.map(o => o.price).sort((a, b) => a - b);
-    const volumes = orders.map(o => o.volume_remain);
-    const totalVolume = volumes.reduce((a, b) => a + b, 0);
-    const weightedAverage = orders.reduce((sum, o) => sum + o.price * o.volume_remain, 0) / totalVolume;
-
-    const mean = orders.reduce((sum, o) => sum + o.price, 0) / orders.length;
-    const variance = orders.reduce((sum, o) => sum + Math.pow(o.price - mean, 2), 0) / orders.length;
-    const stddev = Math.sqrt(variance);
-
-    const percentile95 = prices[Math.floor(prices.length * 0.95)] || prices[prices.length - 1];
-    const median = prices[Math.floor(prices.length / 2)];
-
-    return {
-      weightedAverage: weightedAverage.toString(),
-      max: Math.max(...prices).toString(),
-      min: Math.min(...prices).toString(),
-      stddev: stddev.toString(),
-      median: median.toString(),
-      volume: totalVolume.toString(),
-      orderCount: orders.length.toString(),
-      percentile: percentile95.toString()
-    };
-  }
-
-  groupAndAggregate(orders: MarketOrder[]): NextResponse<AggregatedOrders> {
-    const grouped: Record<number, { buy: MarketOrder[]; sell: MarketOrder[] }> = {};
-
-    for (const order of orders) {
-      if (!grouped[order.type_id]) {
-        grouped[order.type_id] = { buy: [], sell: [] };
-      }
-
-      if (order.is_buy_order) {
-        grouped[order.type_id].buy.push(order);
-      } else {
-        grouped[order.type_id].sell.push(order);
-      }
-    }
-
-    const result: AggregatedOrders = {};
-    for (const typeId in grouped) {
-      const buyStats = this.calculateStats(grouped[typeId].buy);
-      const sellStats = this.calculateStats(grouped[typeId].sell);
-      result[typeId] = { buy: buyStats, sell: sellStats };
-    }
-
-    return NextResponse.json(result);
-  }
-
-  async fetchAllMarketOrders(endpoint: string, structureId: string, page = 1, allOrders: MarketOrder[] = []): Promise<MarketOrder[]> {
+  private async fetchAllMarketOrders(endpoint: string, structureId: string, page = 1, allOrders: MarketOrder[] = []): Promise<MarketOrder[]> {
     const res = await this.markets('structures', structureId + `/?page=${page}`);
     const data = await res.json() as MarketOrder[];
 
-    console.log(`Fetching market orders - Page ${page}`);
+    console.info(`Fetching market orders - Page ${page}`);
 
     const totalPages = parseInt(res.headers.get('x-pages') || '1');
     const combined = [...allOrders, ...data];
@@ -204,34 +119,25 @@ export class Client {
   }
 
   async getAggregatedMarketStats(endpoint: string, structureId: string): Promise<NextResponse<AggregatedOrders>> {
-    // TODO: Move market table to a 'market data' collection. Store structure ID alongside market data.
-    console.log('Checking database cache for market stats...');
-    const collection = `market-${endpoint}-${structureId}`;
-    if (!await collectionExists(collection)) {
-      await createCollection(collection, [{
-        key: {createdAt: 1},
-        options: {expireAfterSeconds: 24 * 60 * 60}
-      }]);
-    }
-
-    const rows = await readMany(collection, {});
+    console.info('Checking database cache for market stats...');
+    const rows = await marketCacheGet( {structureId} );
     if (!rows || rows.length === 0) {
-      console.log('Cache miss - fetching market stats from API...');
+      console.info('Cache miss - fetching market stats from API...');
       const allOrders = await this.fetchAllMarketOrders(endpoint, structureId);
-      const result = this.groupAndAggregate(allOrders);
+      const result = groupAndAggregate(allOrders, structureId);
       const jsonData = await result.json();
       const documents = Object.entries(jsonData).map(([typeId, stats]) => ({
-        ...stats,
+        ...stats as AggregatedOrders[number],
         typeId: parseInt(typeId),
         createdAt: new Date()
       }));
-      await writeMany(collection, documents);
+      await marketCacheSet( documents as MarketCacheInsert[] );
       return NextResponse.json(jsonData);
     }
 
-    console.log('Cache hit - returning market stats from database');
+    console.info('Cache hit - returning market stats from database');
     const aggregated = rows.reduce((acc, row) => {
-      const {typeId, buy, sell, ...rest} = row;
+      const {typeId, buy, sell, ...rest} = row as MarketCache;
       acc[typeId] = {buy, sell};
       return acc;
     }, {} as AggregatedOrders);

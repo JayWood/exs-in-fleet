@@ -214,3 +214,24 @@ export type User = {
 
 export type UserDocument = WithID<User>;
 export type UserInsert = OptionalUnlessRequiredId<User>;
+
+export type OrderStats = {
+    weightedAverage: string;
+    max: string;
+    min: string;
+    stddev: string;
+    median: string;
+    volume: string;
+    orderCount: string;
+    percentile: string;
+};
+
+export type MarketCache = {
+    typeId: number;
+    structureId: string;
+    buy: OrderStats;
+    sell: OrderStats;
+}
+
+export type MarketCacheDocument = WithID<MarketCache>;
+export type MarketCacheInsert = OptionalUnlessRequiredId<MarketCache>;

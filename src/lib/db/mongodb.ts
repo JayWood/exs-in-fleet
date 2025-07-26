@@ -12,7 +12,6 @@ declare global {
 
 if (!global._mongoClientPromise) {
   console.log('Creating a new MongoClient')
-  console.log(uri)
   client = new MongoClient(uri, options)
   global._mongoClientPromise = client.connect()
 }
