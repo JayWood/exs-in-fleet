@@ -203,6 +203,22 @@ export interface OrderTransactionType {
 export type OrderTransactionTypeDocument = WithId<OrderTransactionType>;
 export type OrderTransactionTypeInsert = OptionalUnlessRequiredId<OrderTransactionType>;
 
+type StructureInfo = {
+    structureId: string;
+    name: string;
+}
+
+type PriceComparison = {
+    typeIds: number[];
+    sourceStructure: StructureInfo["structureId"]
+    targetStructure: StructureInfo["structureId"]
+}
+
+type UserSettings = {
+    structures?: StructureInfo[];
+    priceComparisons?: PriceComparison[];
+}
+
 export type User = {
     access_token: string
     refresh_token: string
@@ -210,6 +226,7 @@ export type User = {
     name: string
     playerId: number
     parentPlayerId?: number
+    settings?: UserSettings
 }
 
 export type UserDocument = WithID<User>;
