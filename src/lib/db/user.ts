@@ -1,11 +1,7 @@
 import {
-    COLLECTION_USERS,
     EvePayload,
-    refreshToken,
-    UserRecord,
 } from '@/lib/authEveOnline'
-import { WithId } from 'mongodb'
-import {User, UserDocument, UserInsert} from '@/lib/db/collections'
+import {UserDocument, UserInsert} from '@/lib/db/collections'
 import {readOne, updateOne} from "@/lib/db/mongoHelpers";
 
 export const collection: string = 'eveUsers';
@@ -18,6 +14,7 @@ export const updateUser = async (
 ) => {
     const sub = decoded.sub.split(':')
     const playerId = parseInt(sub[sub.length - 1])
+    console.log('User session information updated' );
 
     // Now write the document.
     const document: UserInsert = {

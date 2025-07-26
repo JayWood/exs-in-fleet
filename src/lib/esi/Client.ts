@@ -2,7 +2,9 @@ import {CorporationWallet, CorporationWalletJournalEntry, CorporationWalletTrans
 import {NextRequest, NextResponse} from "next/server";
 import {MarketOrder} from "@/types/esi/Markets";
 import {AggregatedOrders, groupAndAggregate, marketCacheGet, marketCacheSet} from "@/lib/market";
-import {MarketCache, MarketCacheDocument, MarketCacheInsert} from "@/lib/db/collections";
+import {MarketCache, MarketCacheDocument, MarketCacheInsert, UserDocument} from "@/lib/db/collections";
+import {refreshToken} from "@/lib/authEveOnline";
+import {readOne} from "@/lib/db/mongoHelpers";
 
 export class Client {
   private baseUrl: string = 'https://esi.evetech.net/latest'
@@ -31,7 +33,7 @@ export class Client {
    * @param path
    * @param options
    */
-  authRequest<T>(path: string, options: RequestInit | undefined = {}): Promise<NextResponse<T>> {
+  async authRequest<T>(path: string, options: RequestInit | undefined = {}): Promise<NextResponse<T>> {
     const token = this.nextRequest.cookies.get('token')?.value;
     return this.request(path, {...options, headers: {...options?.headers, Authorization: `Bearer ${token}`}});
   }

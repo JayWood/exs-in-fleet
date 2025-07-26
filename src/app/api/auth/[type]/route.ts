@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getEveUrl, exchangeCode, validateToken } from '@/lib/authEveOnline'
 import { updateUser } from '@/lib/db/user'
-import * as url from "node:url";
 
 type queryParams = {
   params: Promise<{ type: 'login' | 'callback' | 'testing' }>
@@ -58,7 +57,7 @@ const processLoginRequest = async (request: NextRequest, state: eveState ) => {
 
   response.cookies.set('character', `${decodedToken.name}|${playerId}`, {
     secure: 'production' === process.env.NODE_ENV,
-    expires: new Date(decodedToken.exp * 1000),
+    expires: new Date().getTime() + (60*60*3*1000),
     httpOnly: true,
     path: '/',
     sameSite: 'lax',

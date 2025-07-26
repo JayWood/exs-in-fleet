@@ -3,6 +3,7 @@
  */
 import axios from 'axios'
 import * as jose from 'jose'
+import {updateUser} from "@/lib/db/user";
 
 const CLIENT_ID: string = process?.env?.EVE_CLIENT_ID || ''
 const CLIENT_SECRET: string = process?.env?.EVE_CLIENT_SECRET || ''
@@ -102,7 +103,7 @@ export const exchangeCode = (authorizationCode: string) => {
  *
  * @param refresh_token
  */
-export const refreshToken = async (refresh_token: string) => {
+export const refreshToken = async (refresh_token: string): Promise<{decodedToken: EvePayload, access_token: string}> => {
     const params = {
         grant_type: 'refresh_token',
         refresh_token,
@@ -118,11 +119,11 @@ export const refreshToken = async (refresh_token: string) => {
         },
     })
 
-    const validToken = validateToken(data)
-    //
-    // await updateUser(validToken, data.access_token, refresh_token)
+    const decodedToken = await validateToken(data)
 
-    return data.access_token
+    await updateUser(decodedToken, data.access_token, refresh_token)
+
+    return {decodedToken, access_token: data.access_token};
 }
 
 /**
