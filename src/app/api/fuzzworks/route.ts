@@ -1,6 +1,6 @@
 import {NextRequest, NextResponse} from 'next/server';
 import {AggregatedOrders, marketCacheGet, marketCacheSet} from "@/lib/market";
-import {MarketCacheInsert} from "@/lib/db/collections";
+import {MarketCache, MarketCacheInsert} from "@/lib/db/collections";
 
 const marketUrl = 'https://market.fuzzwork.co.uk/aggregates/'
 export const fuzzworkStructures = [
@@ -43,7 +43,12 @@ export async function GET(request: NextRequest) {
         const rows = await marketCacheGet( {structureId: parseInt(stationId), typeId: { $in: typeIds.split(',').map(id => parseInt(id)) } } );
         if (rows && rows.length > 0) {
             console.info('Cache hit - returning market stats from database');
-            return NextResponse.json(rows);
+            const aggregated = rows.reduce((acc, row) => {
+                const {typeId, buy, sell, structureId, ...rest} = row as MarketCache;
+                acc[typeId] = {buy, sell, structureId};
+                return acc;
+            }, {} as AggregatedOrders)
+            return NextResponse.json(aggregated);
         }
 
         console.info('Cache miss - fetching market stats from API...');

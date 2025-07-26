@@ -34,8 +34,15 @@ export class Client {
    * @param options
    */
   async authRequest<T>(path: string, options: RequestInit | undefined = {}): Promise<NextResponse<T>> {
-    const token = this.nextRequest.cookies.get('token')?.value;
-    return this.request(path, {...options, headers: {...options?.headers, Authorization: `Bearer ${token}`}});
+    const characterData = this.nextRequest.cookies.get('character')?.value;
+    if ( ! characterData ) {
+      throw new Error('Not logged in.');
+    }
+
+    const [name,playerId] = characterData.split('|');
+    const userDocument = await readOne<UserDocument>( 'eveUsers', {playerId: parseInt(playerId)} );
+    const {access_token} = await refreshToken(userDocument.refresh_token);
+    return this.request(path, {...options, headers: {...options?.headers, Authorization: `Bearer ${access_token}`}});
   }
 
   // Corporation overloads
@@ -122,7 +129,7 @@ export class Client {
 
   async getAggregatedMarketStats(endpoint: string, structureId: string): Promise<NextResponse<AggregatedOrders>> {
     console.info('Checking database cache for market stats...');
-    const rows = await marketCacheGet( {structureId} );
+    const rows = await marketCacheGet( {structureId: parseInt(structureId)} );
     if (!rows || rows.length === 0) {
       console.info('Cache miss - fetching market stats from API...');
       const allOrders = await this.fetchAllMarketOrders(endpoint, structureId);
@@ -131,16 +138,18 @@ export class Client {
       const documents = Object.entries(jsonData).map(([typeId, stats]) => ({
         ...stats as AggregatedOrders[number],
         typeId: parseInt(typeId),
-        createdAt: new Date()
+        createdAt: new Date(),
+        structureId: parseInt(structureId)
       }));
-      await marketCacheSet( documents as MarketCacheInsert[] );
+
+      await marketCacheSet( documents );
       return NextResponse.json(jsonData);
     }
 
     console.info('Cache hit - returning market stats from database');
     const aggregated = rows.reduce((acc, row) => {
-      const {typeId, buy, sell, ...rest} = row as MarketCache;
-      acc[typeId] = {buy, sell};
+      const {typeId, buy, sell, structureId, ...rest} = row as MarketCache;
+      acc[typeId] = {buy, sell, structureId};
       return acc;
     }, {} as AggregatedOrders);
 
