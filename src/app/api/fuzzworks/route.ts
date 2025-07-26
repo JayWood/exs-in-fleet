@@ -1,23 +1,62 @@
 import {NextRequest, NextResponse} from 'next/server';
+import {AggregatedOrders, marketCacheGet, marketCacheSet} from "@/lib/market";
+import {MarketCacheInsert} from "@/lib/db/collections";
 
-const marketUrl = 'https://market.fuzzwork.co.uk/aggregates/?station=60003760'
+const marketUrl = 'https://market.fuzzwork.co.uk/aggregates/'
+export const fuzzworkStructures = [
+    {
+        station: 60003760,
+        name: 'Jita',
+    },
+    {
+        station: 60008494,
+        name: 'Amarr',
+    },
+    {
+        station: 60011866,
+        name: 'Dodixie',
+    },
+    {
+        station: 60004588,
+        name: 'Rens',
+    },
+    {
+        station: 60005686,
+        name: 'Hek',
+    },
+];
 
 export async function GET(request: NextRequest) {
     try {
         const searchParams = request.nextUrl.searchParams;
         const typeIds = searchParams.get('types');
+        const stationId = searchParams.get('station');
+
+        if (!stationId || !fuzzworkStructures.some(structure => structure.station.toString() === stationId)) {
+            return NextResponse.json({error: 'Invalid station ID'}, {status: 400});
+        }
 
         if (!typeIds) {
             return NextResponse.json({error: 'TypeIds parameter is required'}, {status: 400});
         }
 
-        const response = await fetch(`${marketUrl}&types=${typeIds}`);
-
-        if (!response.ok) {
-            throw new Error('Failed to fetch market data');
+        const rows = await marketCacheGet( {structureId: parseInt(stationId), typeId: { $in: typeIds.split(',').map(id => parseInt(id)) } } );
+        if (rows && rows.length > 0) {
+            console.info('Cache hit - returning market stats from database');
+            return NextResponse.json(rows);
         }
 
-        const data = await response.json();
+        console.info('Cache miss - fetching market stats from API...');
+        const response = await fetch(`${marketUrl}?station=${stationId}&types=${typeIds}`);
+        const data = await response.json() as AggregatedOrders[];
+        const documents = Object.entries(data).map(([typeId, stats]) => ({
+            ...stats as AggregatedOrders[number],
+            typeId: parseInt(typeId),
+            createdAt: new Date(),
+            structureId: parseInt(stationId)
+        }));
+        await marketCacheSet( documents );
+
         return NextResponse.json(data);
     } catch (error) {
         console.error('Fuzzworks API Error:', error);
@@ -26,6 +65,4 @@ export async function GET(request: NextRequest) {
             {status: 500}
         );
     }
-
-    // TODO: cache response data for 24 hours in 'market data' table by source
 }

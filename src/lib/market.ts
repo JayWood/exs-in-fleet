@@ -16,7 +16,7 @@ export type OrderStats = {
 
 export type AggregatedOrders = {
   [typeId: number]: {
-    structureId: string;
+    structureId?: string;
     buy: OrderStats;
     sell: OrderStats;
   };
@@ -96,7 +96,6 @@ export async function marketCacheSet( documents: AggregatedOrders[] ) {
       key: {createdAt: 1},
       options: {expireAfterSeconds: 24 * 60 * 60}
     }]);
-
-    return writeMany( 'marketCache', documents );
   }
+  return writeMany( 'marketCache', documents );
 }
