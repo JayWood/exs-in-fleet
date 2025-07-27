@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 
+import {MagnifyingGlassCircleIcon} from "@heroicons/react/16/solid";
+
 interface FormItem {
   typeId: number;
   name: string;
@@ -28,6 +30,9 @@ const PriceComparisonForm = ({ onSubmit }: PriceComparisonFormProps) => {
     items: [] as FormItem[]
   });
 
+  const [searchResults, setSearchResults] = useState<string[]>([])
+  const [searchQuery, setSearchQuery] = useState('');
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(formData);
@@ -46,7 +51,7 @@ const PriceComparisonForm = ({ onSubmit }: PriceComparisonFormProps) => {
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Title Field */}
         <div className="form-control">
-          <label className="label">
+          <label className="label block">
             <span className="label-text">Title</span>
           </label>
           <input
@@ -62,7 +67,7 @@ const PriceComparisonForm = ({ onSubmit }: PriceComparisonFormProps) => {
         {/* Source Structure Fields */}
         <div className="grid grid-cols-2 gap-4">
           <div className="form-control">
-            <label className="label">
+            <label className="label block">
               <span className="label-text">Source Structure Name</span>
             </label>
             <input
@@ -76,7 +81,7 @@ const PriceComparisonForm = ({ onSubmit }: PriceComparisonFormProps) => {
           </div>
 
           <div className="form-control">
-            <label className="label">
+            <label className="label block">
               <span className="label-text">Source Structure ID</span>
             </label>
             <input
@@ -93,7 +98,7 @@ const PriceComparisonForm = ({ onSubmit }: PriceComparisonFormProps) => {
         {/* Target Structure Fields */}
         <div className="grid grid-cols-2 gap-4">
           <div className="form-control">
-            <label className="label">
+            <label className="label block">
               <span className="label-text">Target Structure Name</span>
             </label>
             <input
@@ -107,7 +112,7 @@ const PriceComparisonForm = ({ onSubmit }: PriceComparisonFormProps) => {
           </div>
 
           <div className="form-control">
-            <label className="label">
+            <label className="label block">
               <span className="label-text">Target Structure ID</span>
             </label>
             <input
@@ -123,38 +128,52 @@ const PriceComparisonForm = ({ onSubmit }: PriceComparisonFormProps) => {
 
         {/* Items Section */}
         <div className="form-control">
-          <label className="label">
+          <label className="label block">
             <span className="label-text">Items</span>
           </label>
           <div className="flex gap-2">
-            <input
-              type="text"
-              placeholder="Add item name"
-              className="input input-bordered flex-grow"
-            />
-            <button 
-              type="button"
-              className="btn btn-primary"
-              onClick={() => {
-                // Add item logic here
-              }}
+            <label className="input grow">
+              <MagnifyingGlassCircleIcon className="w-4 h-4" />
+              <input
+                  type="search"
+                  className="grow"
+                  placeholder="Search"
+                  value={searchQuery}
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck="false"
+                  list="searchResults"
+                  onInput={ evt => { /*search*/ } }
+                  onChange={ evt => { return setSearchQuery(evt.target.value) } }
+              />
+              <datalist id="searchResults">{searchResults?.map( (item, index) => ( <option key={index} value={item}></option>) )}</datalist>
+            </label>
+            <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => {
+                  if (searchQuery.length === 0) { return; }
+                  setFormData( {...formData, items: [...formData.items, {typeId: 0, name: searchQuery}]})
+                  setSearchQuery('');
+                }}
             >
               Add Item
             </button>
           </div>
-          
+
           {/* Items List */}
           <div className="mt-2">
             {formData.items.map((item, index) => (
-              <div key={index} className="flex items-center gap-2 mt-2">
-                <span className="flex-grow">{item.name}</span>
-                <button
-                  type="button"
-                  className="btn btn-error btn-sm"
-                  onClick={() => {
-                    setFormData(prev => ({
-                      ...prev,
-                      items: prev.items.filter((_, i) => i !== index)
+                <div key={index} className="flex items-center gap-2 mt-2">
+                  <span className="flex-grow">{item.name}</span>
+                  <button
+                      type="button"
+                      className="btn btn-error btn-sm"
+                      onClick={() => {
+                        setFormData(prev => ({
+                          ...prev,
+                          items: prev.items.filter((_, i) => i !== index)
                     }));
                   }}
                 >

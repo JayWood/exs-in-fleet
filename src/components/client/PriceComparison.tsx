@@ -1,7 +1,6 @@
 'use client'
 
 import CardMedium from "@/components/ui/CardMedium";
-import Table from "@/components/ui/Table";
 import {ChevronDownIcon, ChevronUpIcon} from "@heroicons/react/16/solid";
 import Chevron from "@/components/ui/Chevron";
 import Link from "next/link";
@@ -51,7 +50,9 @@ const PriceComparison = ( {title, sourceSystem, targetSystem, prices}: PriceComp
         { ! editing && <>
           <button
               className="btn btn-primary btn-sm mb-2 float-right"
-              onClick={() => setEditing(!editing)}
+              onClick={() => {
+                setEditing(!editing)
+              }}
           >
             {editing ? 'Submit' : 'Edit'}
           </button>
