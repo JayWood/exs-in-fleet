@@ -1,8 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import {useRef, useState} from 'react'
 
 import {MagnifyingGlassCircleIcon} from "@heroicons/react/16/solid";
+import axios from "axios";
+import {debounce} from "next/dist/server/utils";
+import {InvTypeDocument} from "@/lib/db/collections";
 
 interface FormItem {
   typeId: number;
@@ -30,8 +33,21 @@ const PriceComparisonForm = ({ onSubmit }: PriceComparisonFormProps) => {
     items: [] as FormItem[]
   });
 
-  const [searchResults, setSearchResults] = useState<string[]>([])
+  const [searchResults, setSearchResults] = useState<FormItem[]>([])
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const timeoutId = useRef<NodeJS.Timeout | null>(null);
+
+  const searchItems = async (query: string) => {
+    setIsSearching(true);
+    await axios.get(`/api/eve/sde/invTypes?s=${query}`).then(res => {
+      setSearchResults(res.data.map((item: InvTypeDocument) => ({
+        typeId: item.typeID,
+        name: item.typeName
+      })));
+      setIsSearching(false)
+    })
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -138,23 +154,40 @@ const PriceComparisonForm = ({ onSubmit }: PriceComparisonFormProps) => {
                   type="search"
                   className="grow"
                   placeholder="Search"
-                  value={searchQuery}
-                  autoComplete="off"
-                  autoCorrect="off"
-                  autoCapitalize="off"
-                  spellCheck="false"
                   list="searchResults"
-                  onInput={ evt => { /*search*/ } }
-                  onChange={ evt => { return setSearchQuery(evt.target.value) } }
+                  disabled={isSearching}
+                  value={searchQuery}
+                  onChange={(evt) => {
+                    const searchQuery = evt.target.value;
+                    if (timeoutId.current) {
+                      clearTimeout(timeoutId.current);
+                    }
+
+                    setSearchQuery(searchQuery);
+                    if (searchQuery.length < 3 ) {
+                      return;
+                    }
+
+                    if (searchResults.some(item => item.name.toLowerCase().includes(searchQuery.toLowerCase()))) {
+                      return;
+                    }
+
+                    timeoutId.current = setTimeout(() => {
+                      searchItems(evt.target.value);
+                    }, 500);
+                  }}
               />
-              <datalist id="searchResults">{searchResults?.map( (item, index) => ( <option key={index} value={item}></option>) )}</datalist>
+              { isSearching && <span className="loading loading-dots loading-xs"></span> }
+              <datalist id="searchResults">{searchResults?.map( (item, index) => ( <option key={index} value={item.name}></option>) )}</datalist>
             </label>
             <button
                 type="button"
                 className="btn btn-primary"
+                disabled={searchQuery.length === 0
+                    || ! searchResults.some(item => item.name.toLowerCase().includes(searchQuery.toLowerCase()))
+                    || isSearching}
                 onClick={() => {
-                  if (searchQuery.length === 0) { return; }
-                  setFormData( {...formData, items: [...formData.items, {typeId: 0, name: searchQuery}]})
+                  setFormData( {...formData, items: [...formData.items, searchResults.find(item => item.name.toLowerCase().includes(searchQuery.toLowerCase()))!]})
                   setSearchQuery('');
                 }}
             >
