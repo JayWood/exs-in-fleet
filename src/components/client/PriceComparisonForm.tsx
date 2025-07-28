@@ -5,7 +5,7 @@ import {useRef, useState} from 'react'
 import {MagnifyingGlassCircleIcon} from "@heroicons/react/16/solid";
 import axios from "axios";
 import {debounce} from "next/dist/server/utils";
-import {InvTypeDocument} from "@/lib/db/collections";
+import {InvTypeDocument, UserSettings} from "@/lib/db/collections";
 
 interface FormItem {
   typeId: number;
@@ -21,9 +21,10 @@ interface PriceComparisonFormProps {
     title: string;
     items: FormItem[];
   }) => void;
+  value: UserSettings['priceComparisons']
 }
 
-const PriceComparisonForm = ({ onSubmit }: PriceComparisonFormProps) => {
+const PriceComparisonForm = ({ onSubmit, value }: PriceComparisonFormProps) => {
   const [formData, setFormData] = useState({
     sourceStructureName: '',
     sourceStructureId: '',

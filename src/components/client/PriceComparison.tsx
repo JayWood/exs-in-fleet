@@ -46,7 +46,7 @@ const PriceComparison = ({title, sourceSystem, targetSystem, prices}: PriceCompa
     return (
         <CardMedium cardTitle={title}>
             <div className="overflow-x-auto">
-                {editing && <PriceComparisonForm onSubmit={(data) => {
+                {editing && <PriceComparisonForm value={} onSubmit={(data) => {
                     const structures = {
                         title: data.title,
                         sourceStructure: {
