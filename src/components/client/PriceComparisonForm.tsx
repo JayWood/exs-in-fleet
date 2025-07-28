@@ -41,9 +41,9 @@ const PriceComparisonForm = ({ onSubmit }: PriceComparisonFormProps) => {
   const searchItems = async (query: string) => {
     setIsSearching(true);
     await axios.get(`/api/eve/sde/invTypes?s=${query}`).then(res => {
-      setSearchResults(res.data.map((item: InvTypeDocument) => ({
-        typeId: item.typeID,
-        name: item.typeName
+      setSearchResults(res.data.map((item?: InvTypeDocument) => ({
+        typeId: item?.typeID,
+        name: item?.typeName
       })));
       setIsSearching(false)
     })

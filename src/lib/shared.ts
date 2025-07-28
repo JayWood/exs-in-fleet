@@ -1,4 +1,5 @@
 import {IndustryActivityMaterial} from "@/lib/db/collections";
+import {NextRequest} from "next/server";
 
 export type eveImageTypes = {
     category: 'alliances' | 'corporations' | 'characters' | 'types';
@@ -20,6 +21,19 @@ export function eveImageUrl({category, id, variation = 'icon', size = 32}: eveIm
     baseUrl.searchParams.set('size', size?.toString());
 
     return baseUrl.toString();
+}
+
+export function isLoggedIn( r: NextRequest ): boolean {
+    return r.cookies.hasOwnProperty('character');
+}
+
+export function getCurrentUserId( r: NextRequest ): number {
+    const characterCookie = r.cookies.get('character')?.value;
+    if (!characterCookie) {
+        throw new Error('User not logged in');
+    }
+    const [playerName, playerId] = characterCookie.split('|');
+    return parseInt(playerId);
 }
 
 export interface MaterialCostInput {
