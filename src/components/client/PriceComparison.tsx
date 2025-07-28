@@ -47,7 +47,7 @@ const PriceComparison = ({title, sourceSystem, targetSystem, prices}: PriceCompa
         <CardMedium cardTitle={title}>
             <div className="overflow-x-auto">
                 {editing && <PriceComparisonForm onSubmit={(data) => {
-                    const dbData = {
+                    const structures = {
                         title: data.title,
                         sourceStructure: {
                             name: data.sourceStructureName,
@@ -59,7 +59,7 @@ const PriceComparison = ({title, sourceSystem, targetSystem, prices}: PriceCompa
                         },
                         typeIds: data.items.map(item => item.typeId),
                     }
-                    axios.post('/api/user', dbData).then(res => { console.log(res)})
+                    axios.post('/api/user', {structures: structures}).then(res => {console.log(res)})
                 }}/>}
                 {!editing && <>
                     <button
