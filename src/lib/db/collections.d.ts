@@ -203,20 +203,20 @@ export interface OrderTransactionType {
 export type OrderTransactionTypeDocument = WithId<OrderTransactionType>;
 export type OrderTransactionTypeInsert = OptionalUnlessRequiredId<OrderTransactionType>;
 
-type StructureInfo = {
-    structureId: string;
+type GenericObject = {
+    id: string;
     name: string;
 }
 
 type PriceComparison = {
     title: string;
-    typeIds: number[];
-    sourceStructure: StructureInfo["structureId"]
-    targetStructure: StructureInfo["structureId"]
+    items: GenericObject[];
+    source: GenericObject
+    target: GenericObject
 }
 
 type UserSettings = {
-    structures?: StructureInfo[];
+    structures?: GenericObject[];
     priceComparisons?: PriceComparison[];
 }
 

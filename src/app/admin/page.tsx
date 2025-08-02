@@ -18,10 +18,7 @@ const Page = async () => {
             <div className="grid w-full gap-4 grid-cols-1 md:grid-cols-2">
                 {/*<MarketTree nodes={groups} />*/}
                 <PriceComparison
-                    title={settings.structures.title}
-                    prices={getPriceComparison()}
-                    sourceSystem={settings.structures.sourceStructure}
-                    targetSystem={settings.structures.targetStructure}
+                  value={settings?.structures}
                 />
             </div>
         </div>
