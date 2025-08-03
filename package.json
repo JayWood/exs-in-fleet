@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
+    "ajv": "^8.17.1",
     "apexcharts": "^5.0.0",
     "axios": "1.11.0",
     "clsx": "^2.1.1",

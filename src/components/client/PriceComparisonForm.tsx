@@ -5,12 +5,12 @@ import {useRef, useState} from 'react'
 import {MagnifyingGlassCircleIcon} from "@heroicons/react/16/solid";
 import axios from "axios";
 import {debounce} from "next/dist/server/utils";
-import {GenericObject, InvTypeDocument, PriceComparison, UserSettings} from "@/lib/db/collections";
+import {GenericObject, InvTypeDocument, PriceComparisonType, UserSettings} from "@/lib/db/collections";
 
 interface PriceComparisonFormProps {
-  onChange: (data: PriceComparison) => void;
+  onChange: (data: PriceComparisonType) => void;
   onSubmit: () => void;
-  value: PriceComparison;
+  value: PriceComparisonType;
 }
 
 const PriceComparisonForm = ({onChange, value, onSubmit}: PriceComparisonFormProps) => {
@@ -32,7 +32,10 @@ const PriceComparisonForm = ({onChange, value, onSubmit}: PriceComparisonFormPro
 
   return (
     <div className="w-full max-w-2xl mx-auto p-4">
-      <form onSubmit={onSubmit} className="space-y-4">
+      <form onSubmit={(e) => {
+        e.preventDefault();
+        onSubmit();
+      }} className="space-y-4">
         <div className="form-control">
           <label className="label block">
             <span className="label-text">Title</span>
@@ -40,7 +43,7 @@ const PriceComparisonForm = ({onChange, value, onSubmit}: PriceComparisonFormPro
           <input
             type="text"
             name="title"
-            value={value.title || ''}
+            value={value?.title || ''}
             onChange={e => onChange({...value, title: e.target.value})}
             className="input input-bordered"
             placeholder="Enter title"
@@ -56,7 +59,7 @@ const PriceComparisonForm = ({onChange, value, onSubmit}: PriceComparisonFormPro
             <input
               type="text"
               name="sourceStructureName"
-              value={value.source.name || ''}
+              value={value?.source?.name || ''}
               onChange={e => onChange({...value, source: {...value.source, name: e.target.value}})}
               className="input input-bordered"
               placeholder="Enter source structure name"
@@ -70,7 +73,7 @@ const PriceComparisonForm = ({onChange, value, onSubmit}: PriceComparisonFormPro
             <input
               type="text"
               name="sourceStructureId"
-              value={value.source.id || ''}
+              value={value?.source?.id || ''}
               onChange={e => onChange({...value, source: {...value.source, id: e.target.value}})}
               className="input input-bordered"
               placeholder="Enter source structure ID"
@@ -87,7 +90,7 @@ const PriceComparisonForm = ({onChange, value, onSubmit}: PriceComparisonFormPro
             <input
               type="text"
               name="targetStructureName"
-              value={value.target.name || ''}
+              value={value?.target?.name || ''}
               onChange={e => onChange({...value, target: {...value.target, name: e.target.value}})}
               className="input input-bordered"
               placeholder="Enter target structure name"
@@ -101,7 +104,7 @@ const PriceComparisonForm = ({onChange, value, onSubmit}: PriceComparisonFormPro
             <input
               type="text"
               name="targetStructureId"
-              value={value.target.id || ''}
+              value={value?.target?.id || ''}
               onChange={e => onChange({...value, target: {...value.target, id: e.target.value}})}
               className="input input-bordered"
               placeholder="Enter target structure ID"
@@ -122,7 +125,6 @@ const PriceComparisonForm = ({onChange, value, onSubmit}: PriceComparisonFormPro
                 className="grow"
                 placeholder="Search"
                 list="searchResults"
-                disabled={isSearching}
                 value={searchQuery}
                 onChange={(evt) => {
                   const searchQuery = evt.target.value;
@@ -156,7 +158,9 @@ const PriceComparisonForm = ({onChange, value, onSubmit}: PriceComparisonFormPro
                 || isSearching}
               onClick={() => {
                 const result = searchResults.find(item => item.name.toLowerCase().includes(searchQuery.toLowerCase()));
-                onChange({...value, items: [...value.items, result ]});
+                if (result) {
+                  onChange({...value, items: [...value?.items, result]});
+                }
                 setSearchQuery('');
               }}
             >
@@ -166,7 +170,7 @@ const PriceComparisonForm = ({onChange, value, onSubmit}: PriceComparisonFormPro
 
           {/* Items List */}
           <div className="mt-2">
-            {value.items.map((item, index) => (
+            {value?.items?.map((item, index) => (
               <div key={index} className="flex items-center gap-2 mt-2">
                 <span className="flex-grow">{item.name}</span>
                 <button

@@ -208,7 +208,7 @@ type GenericObject = {
     name: string;
 }
 
-type PriceComparison = {
+type PriceComparisonType = {
     title: string;
     items: GenericObject[];
     source: GenericObject
@@ -217,7 +217,7 @@ type PriceComparison = {
 
 type UserSettings = {
     structures?: GenericObject[];
-    priceComparisons?: PriceComparison[];
+    priceComparisons?: PriceComparisonType[];
 }
 
 export type User = {

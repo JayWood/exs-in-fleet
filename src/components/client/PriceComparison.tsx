@@ -4,7 +4,7 @@ import CardMedium from "@/components/ui/CardMedium";
 import {useEffect, useState} from "react";
 import PriceComparisonForm from "@/components/client/PriceComparisonForm";
 import axios from "axios";
-import {PriceComparison, UserSettings} from "@/lib/db/collections";
+import {PriceComparisonType, UserSettings} from "@/lib/db/collections";
 
 interface Item {
   typeId: number;
@@ -32,22 +32,35 @@ const calculateDiffPercentage = (target: number, source: number): number => {
   return Number((((target - source) / source) * 100).toFixed(2));
 }
 
-const PriceComparison = ({value}: { value: PriceComparison }) => {
+const PriceComparison = ({value}: { value: PriceComparisonType }) => {
   const [editing, setEditing] = useState(false);
-  const [componentState, setComponentState] = useState<PriceComparison | null>(null);
+  const defaultSettings = {
+    title: 'Test',
+    source: {
+      name: '',
+      id: ''
+    },
+    target: {
+      name: '',
+      id: ''
+    },
+    items: []
+  }
+  const [componentState, setComponentState] = useState<PriceComparisonType>( defaultSettings );
 
   useEffect(() => {
-    setComponentState(value);
-  }, [componentState])
+    setComponentState(value || defaultSettings );
+  }, [])
 
   return (
     <CardMedium cardTitle={componentState?.title}>
       <div className="overflow-x-auto">
         {editing && <PriceComparisonForm
-					value={value}
-					onChange={(data: PriceComparison) => null}
+					value={componentState}
+					onChange={(data: PriceComparisonType) => setComponentState(data)}
           onSubmit={() => {
-            setEditing(false);
+            console.log( componentState );
+            // setEditing(false);
           }}
         />}
         {!editing && <>
