@@ -1,7 +1,7 @@
 import {OptionalUnlessRequiredId, WithId} from "mongodb";
 import clientPromise from "@/lib/db/mongodb";
 
-async function createOne<T extends {}>(
+async function createOne<T extends Document>(
   collection: string,
   doc: OptionalUnlessRequiredId<T>
 ) {
@@ -10,7 +10,7 @@ async function createOne<T extends {}>(
   return db.collection<T>(collection).insertOne(doc)
 }
 
-async function readOne<T extends {}>(
+async function readOne<T extends Document>(
   collection: string,
   filter: Record<string, any>,
   projection?: Record<string, 1 | 0>
@@ -20,7 +20,7 @@ async function readOne<T extends {}>(
   return db.collection<T>(collection).findOne(filter, {projection})
 }
 
-async function readMany<T extends {}>(
+async function readMany<T extends Document>(
   collection: string,
   filter: Record<string, any>,
   projection?: Record<string, 1 | 0>
@@ -30,7 +30,7 @@ async function readMany<T extends {}>(
   return db.collection<T>(collection).find(filter, {projection}).toArray()
 }
 
-async function updateOne<T extends {}>(
+async function updateOne<T extends Document>(
   collection: string,
   filter: Record<string, any>,
   update: Partial<T>,
@@ -40,7 +40,6 @@ async function updateOne<T extends {}>(
   const db = client.db();
   return db.collection<T>(collection).updateOne(filter, {$set: update}, options);
 }
-
 
 async function deleteOne(
   collection: string,
