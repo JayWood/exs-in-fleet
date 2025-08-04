@@ -5,24 +5,24 @@ import {Ajv, JSONSchemaType} from "ajv";
 import {UserDocument, UserSettings} from "@/lib/db/collections";
 
 const userSettingsSchema: JSONSchemaType<UserSettings> = {
-  anyOf: [], oneOf: [],
   type: 'object',
   additionalProperties: false,
   properties: {
     structures: {
-      type: 'array', items: {
-        type: 'object', properties: {
-          type: 'object',
-          properties: {
-            name: {type: 'string'},
-            id: {type: 'string'}
-          },
-          required: ['name', 'id']
-        }
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          name: {type: 'string'},
+          id: {type: 'string'}
+        },
+        required: ['name', 'id'],
+        additionalProperties: false
       }
     },
-    priceComparison: {
-      type: 'array', items: {
+    priceComparisons: {
+      type: 'array',
+      items: {
         type: 'object',
         properties: {
           title: {type: 'string'},
@@ -44,15 +44,21 @@ const userSettingsSchema: JSONSchemaType<UserSettings> = {
           },
           items: {
             type: 'array',
-            items: {type: 'number'}
+            items: {
+              type: 'object',
+              properties: {
+                typeId: {type: 'number'},
+                name: {type: 'string'}
+              }
+            }
           }
         },
-        required: ['title', 'source', 'target', 'items']
+        required: ['title', 'source', 'target', 'items'],
+        additionalProperties: false
       }
     }
   }
-}
-
+};
 
 export async function POST(nextRequest: NextRequest) {
   const playerId = getCurrentUserId(nextRequest);
@@ -61,7 +67,10 @@ export async function POST(nextRequest: NextRequest) {
   const ajv = new Ajv();
   const validate = ajv.compile(userSettingsSchema);
 
-  if (!validate(userSettingsSchema, payload)) {
+  console.log( JSON.stringify(payload, null, 2) );
+
+  if (!validate(payload)) {
+    console.log( JSON.stringify(payload, null, 2) );
     return NextResponse.json({error: validate.errors}, {status: 400});
   }
 
@@ -71,14 +80,14 @@ export async function POST(nextRequest: NextRequest) {
   }
 
   const {settings} = playerDocument;
-  const {structures, priceComparison} = payload;
+  const {structures, priceComparisons} = payload;
 
   await updateOne<UserDocument>('eveUsers', {playerId}, {
     ...playerDocument,
     settings: {
       ...settings,
       ...(structures && {structures}),
-      ...(priceComparison && {priceComparison})
+      ...(priceComparisons && {priceComparisons})
     }
   }, {upsert: true});
   return NextResponse.json('success');

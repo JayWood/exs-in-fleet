@@ -59,7 +59,7 @@ const PriceComparison = ({value}: { value: PriceComparisonType }) => {
 					value={componentState}
 					onChange={(data: PriceComparisonType) => setComponentState(data)}
           onSubmit={() => {
-            console.log( componentState );
+            axios.post('/api/user', {priceComparisons: [componentState]}).then(res => console.log(res.data))
             // setEditing(false);
           }}
         />}
