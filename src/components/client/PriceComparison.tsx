@@ -36,6 +36,7 @@ const PriceComparison = ({value}: { value: PriceComparisonType }) => {
   const [editing, setEditing] = useState(false);
   const defaultSettings = {
     title: 'Test',
+    id: '',
     source: {
       name: '',
       id: ''

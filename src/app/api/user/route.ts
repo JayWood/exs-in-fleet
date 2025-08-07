@@ -26,6 +26,7 @@ const userSettingsSchema: JSONSchemaType<UserSettings> = {
         type: 'object',
         properties: {
           title: {type: 'string'},
+          id: {type: 'string' },
           source: {
             type: 'object',
             properties: {

@@ -211,8 +211,9 @@ type GenericObject = {
 type PriceComparisonType = {
     title: string;
     items: GenericObject[];
-    source: GenericObject
-    target: GenericObject
+    source: GenericObject;
+    target: GenericObject;
+    id?: string;
 }
 
 type UserSettings = {
@@ -221,13 +222,13 @@ type UserSettings = {
 }
 
 export type User = {
-    access_token: string
-    refresh_token: string
-    expiration: number
-    name: string
-    playerId: number
-    parentPlayerId?: number
-    settings?: UserSettings
+    access_token: string;
+    refresh_token: string;
+    expiration: number;
+    name: string;
+    playerId: number;
+    parentPlayerId?: number;
+    settings?: UserSettings;
 }
 
 export type UserDocument = WithID<User>;
