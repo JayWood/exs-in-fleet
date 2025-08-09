@@ -1,5 +1,5 @@
 import {NextRequest, NextResponse} from "next/server";
-import {PriceData} from "@/components/client/PriceComparison";
+import {PriceData} from "@/components/client/PriceComparison/PriceComparison";
 
 export type priceCompareParams = {
   sourceSystemId?: number

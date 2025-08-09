@@ -2,7 +2,7 @@
 
 import CardMedium from "@/components/ui/CardMedium";
 import {useEffect, useState} from "react";
-import PriceComparisonForm from "@/components/client/PriceComparisonForm";
+import PriceComparisonForm from "@/components/client/PriceComparison/PriceComparisonForm";
 import axios from "axios";
 import {PriceComparisonType, UserSettings} from "@/lib/db/collections";
 

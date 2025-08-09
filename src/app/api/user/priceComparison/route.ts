@@ -1,11 +1,8 @@
 import {NextRequest, NextResponse} from "next/server";
 import {getCurrentUserId} from "@/lib/shared";
-import {Ajv, JSONSchemaType} from "ajv";
-import {PriceComparisonType, UserSettings} from "@/lib/db/collections";
-
-type queryParams = {
-  params: Promise<{action: string}>;
-}
+import {Ajv} from "ajv";
+import {PriceComparisonType, UserDocument} from "@/lib/db/collections";
+import {readOne, updateOne} from "@/lib/db/mongoHelpers";
 
 export const priceComparisonSchema = {
   type: 'object',
@@ -70,6 +67,21 @@ export async function POST ( nextRequest: NextRequest ) {
       }
     );
   }
+
+  const playerDocument: UserDocument | null = await readOne<UserDocument>('eveUsers', {playerId});
+  if ( ! playerDocument ) {
+    return NextResponse.json({error: 'Bad Request'}, {status: 400});
+  }
+
+  const {settings} = playerDocument;
+  const result = await updateOne<UserDocument>('eveUsers', {playerId}, {
+    settings: {
+      ...settings,
+      priceComparisons: [...settings?.priceComparisons, {...payload, id: crypto.randomUUID()}]
+    }
+  }, {upsert: true})
+
+  return NextResponse.json(result);
 }
 
 /**
@@ -90,6 +102,8 @@ export async function GET ( nextRequest: NextRequest ) {
   if ( ! validate(payload) ) {
     return NextResponse.json({error: 'Bad Request'}, {status: 400});
   }
+
+  return NextResponse.json({error: 'Not Implemented'}, {status: 501});
 }
 
 /**
@@ -110,6 +124,40 @@ export async function PUT ( nextRequest: NextRequest ) {
   if ( ! validate(payload) ) {
     return NextResponse.json({error: 'Bad Request'}, {status: 400});
   }
+
+  const playerDocument: UserDocument | null = await readOne<UserDocument>('eveUsers', {playerId});
+  if ( ! playerDocument ) {
+    return NextResponse.json({error: 'Bad Request'}, {status: 400});
+  }
+
+  const {settings} = playerDocument;
+  if ( ! settings?.priceComparisons || settings?.priceComparisons.length === 0 ) {
+    return NextResponse.json({error: 'Document not found.'}, {status: 404})
+  }
+
+  const priceComparisonIndex = settings.priceComparisons.findIndex((pc: PriceComparisonType) => pc.id === payload.id)
+  if ( priceComparisonIndex ) {
+    const updatedPriceComparisons = [...settings.priceComparisons]
+    updatedPriceComparisons[priceComparisonIndex] = payload
+
+    const result = await updateOne<UserDocument>('eveUsers', {playerId}, {
+      settings: {
+        ...settings,
+        priceComparisons: updatedPriceComparisons
+      }
+    }, {upsert: true})
+
+    return NextResponse.json(result)
+  }
+
+  const result = await updateOne<UserDocument>('eveUsers', {playerId}, {
+    settings: {
+      ...settings,
+      priceComparisons: [...settings?.priceComparisons, {...payload}]
+    }
+  }, {upsert: true})
+
+  return NextResponse.json(result);
 }
 
 /**
@@ -130,6 +178,34 @@ export async function DELETE ( nextRequest: NextRequest ) {
   if ( ! validate(payload) ) {
     return NextResponse.json({error: 'Bad Request'}, {status: 400});
   }
+
+  const playerDocument: UserDocument | null = await readOne<UserDocument>('eveUsers', {playerId});
+  if ( ! playerDocument ) {
+    return NextResponse.json({error: 'Bad Request'}, {status: 400});
+  }
+
+  const {settings} = playerDocument;
+  if (!settings?.priceComparisons || settings?.priceComparisons.length === 0) {
+    return NextResponse.json({error: 'Document not found.'}, {status: 404})
+  }
+
+  const filteredPriceComparisons = settings.priceComparisons.filter(
+    (pc: PriceComparisonType) => pc.id !== payload.id
+  )
+
+  const result = await updateOne<UserDocument>(
+    'eveUsers',
+    {playerId},
+    {
+      settings: {
+        ...settings,
+        priceComparisons: filteredPriceComparisons
+      }
+    },
+    {upsert: true}
+  )
+
+  return NextResponse.json(result)
 }
 
 /**
@@ -150,13 +226,6 @@ export async function PATCH ( nextRequest: NextRequest ) {
   if ( ! validate(payload) ) {
     return NextResponse.json({error: 'Bad Request'}, {status: 400});
   }
-}
 
-/**
- * Get the allowed methods for a price comparison.
- *
- * @param nextRequest
- */
-export async function OPTIONS ( nextRequest: NextRequest ) {
-
+  return NextResponse.json({error: 'Not Implemented'}, {status: 501});
 }

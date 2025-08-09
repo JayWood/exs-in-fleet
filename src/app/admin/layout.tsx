@@ -34,7 +34,9 @@ const AdminLayout = async ({children}: { children: React.ReactNode }) => {
             variation: 'portrait'
           })}/>
         </div>
-        {children}
+        <div className="w-full flex-none px-6 py-6 space-y-4">
+            {children}
+        </div>
       </div>
       <div className="drawer-side">
         <label htmlFor="admin-drawer" aria-label="close sidebar" className="drawer-overlay"></label>

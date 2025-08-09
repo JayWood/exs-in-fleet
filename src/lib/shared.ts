@@ -32,7 +32,7 @@ export function getCurrentUserId( r: NextRequest ): number {
     if (!characterCookie) {
         throw new Error('User not logged in');
     }
-    const [playerName, playerId] = characterCookie.split('|');
+    const [, playerId] = characterCookie.split('|');
     return parseInt(playerId);
 }
 

@@ -36,7 +36,6 @@ function buildMarketGroupTree(groups: InvMarketGroup[]): MarketGroupNode[] {
     return roots;
 }
 
-
 export async function getMarketGroupTree() {
     const marketProjection = createProjection<InvMarketGroup>( [ 'marketGroupID', 'marketGroupName', 'parentGroupID', 'hasTypes' ] )
     const groups = await readMany<InvMarketGroup>( 'invMarketGroups', {}, marketProjection );
