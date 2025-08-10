@@ -14,7 +14,7 @@ const Page = async () => {
   const {settings} = await readOne<UserDocument>('eveUsers', {playerId: parseInt(playerId)}, createProjection(['settings']));
   return (
     <>
-      <MarketTree nodes={groups}/>
+      {/*<MarketTree nodes={groups}/>*/}
       <SectionPriceComparison settings={settings}/>
     </>
   )
