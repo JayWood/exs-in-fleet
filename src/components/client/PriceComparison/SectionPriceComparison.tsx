@@ -9,6 +9,7 @@ import axios from "axios";
 export default function SectionPriceComparison({settings}: { settings: UserDocument['settings'] }) {
     const id = useId();
     const [priceComparisons, setPriceComparisons] = useState<PriceComparisonType[]>([]);
+    const [editMode, setEditMode] = useState(false);
     useEffect(() => {
         if (settings?.priceComparisons) {
             setPriceComparisons(settings?.priceComparisons);
@@ -23,17 +24,26 @@ export default function SectionPriceComparison({settings}: { settings: UserDocum
                         <EllipsisVerticalIcon className="h-4 w-4 text-gray-500 hover:text-gray-800"/>
                     </button>
                     <ul className="dropdown-content z-[1] menu p-1 shadow bg-base-100 rounded-box w-44 text-sm">
-                        <li><a href="#"
-                               className="w-full"
-                               onClick={(e) => {
-                                   e.preventDefault();
-                                   setPriceComparisons([...priceComparisons, {
-                                       title: '',
-                                       source: {name: '', id: ''},
-                                       target: {name: '', id: ''},
-                                       items: []
-                                   }]);
-                               }}>Add New</a></li>
+                        <li>
+                          <a href="#"
+                             className="w-full"
+                             onClick={(e) => {
+                               e.preventDefault();
+                               setPriceComparisons([...priceComparisons, {
+                                   title: '',
+                                   source: {name: '', id: ''},
+                                   target: {name: '', id: ''},
+                                   items: []
+                               }]);
+                          }}>Add New</a>
+                          <a href='#'
+                             className="w-full"
+                             onClick={(e) => {
+                               e.preventDefault();
+                               setEditMode(!editMode);
+                             }}
+                          >{!editMode ? "Edit Mode" : "View Mode"}</a>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -43,6 +53,13 @@ export default function SectionPriceComparison({settings}: { settings: UserDocum
                         <PriceComparison
                             key={`${index}-${id}`}
                             value={comparison}
+                            editMode={editMode}
+                            onDelete={() => {
+                                const newComparisons = priceComparisons.filter((c, i) => i !== index);
+                                if (newComparisons.length === 0) { return; }
+                                axios.post('/api/user', {priceComparisons: newComparisons});
+                                setPriceComparisons(newComparisons)
+                            }}
                             onUpdate={(value) => {
                               const newComparisons = priceComparisons.map((c, i) => i === index ? value : c);
                               axios.post('/api/user', {priceComparisons: newComparisons});

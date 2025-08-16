@@ -5,7 +5,7 @@ import {useEffect, useState} from "react";
 import PriceComparisonForm from "@/components/client/PriceComparison/PriceComparisonForm";
 import axios from "axios";
 import {PriceComparisonType, UserSettings} from "@/lib/db/collections";
-import {Cog6ToothIcon} from "@heroicons/react/24/outline";
+import {Cog6ToothIcon, PencilSquareIcon, TrashIcon} from "@heroicons/react/24/outline";
 
 interface Item {
     typeId: number;
@@ -36,10 +36,12 @@ const calculateDiffPercentage = (target: number, source: number): number => {
 interface PriceComparisonProps {
     value: PriceComparisonType;
     onUpdate: (value: PriceComparisonType) => void;
+    onDelete: () => void;
+    editMode?: boolean
 }
 
-const PriceComparison = ({value, onUpdate}: PriceComparisonProps) => {
-    const [editing, setEditing] = useState(false);
+const PriceComparison = ({value, onUpdate, onDelete, editMode}: PriceComparisonProps) => {
+    const [showEditingForm, setshowEditingForm] = useState(false);
     const defaultSettings = {
         title: '',
         source: {
@@ -63,22 +65,32 @@ const PriceComparison = ({value, onUpdate}: PriceComparisonProps) => {
             <div className="card-body">
                 <div className="flex justify-between items-center">
                     <div className="card-title">{componentState.title}</div>
-                    <button
-                        className="btn btn-link mb-2"
-                        onClick={() => {
-                            setEditing(!editing)
-                        }}
-                    >
-                        <Cog6ToothIcon className="w-4 h-4 mr-1  text-gray-500 hover:text-gray-800"/>
-                    </button>
+                    { editMode && (
+                      <div>
+                          <button
+                            className="btn btn-link mb-2 px-0"
+                            onClick={onDelete}
+                          >
+                              <TrashIcon className="w-4 h-4  text-gray-500 hover:text-gray-800"/>
+                          </button>
+                          <button
+                            className="btn btn-link mb-2"
+                            onClick={() => {
+                                setshowEditingForm(!showEditingForm)
+                            }}
+                          >
+                              <PencilSquareIcon className="w-4 h-4 mr-1  text-gray-500 hover:text-gray-800"/>
+                          </button>
+                      </div>
+                    ) }
                 </div>
                 <div className="overflow-x-auto">
-                    {editing && <PriceComparisonForm
+                    {showEditingForm && <PriceComparisonForm
                         value={componentState}
                         onChange={(data: PriceComparisonType) => setComponentState(data)}
-                        onSubmit={() => {onUpdate(componentState); setEditing(false)}}
+                        onSubmit={() => {onUpdate(componentState); setshowEditingForm(false)}}
                     />}
-                    {!editing && <>
+                    {!showEditingForm && <>
                         <table className="table table-xs table-zebra">
                             <thead>
                             <tr>
