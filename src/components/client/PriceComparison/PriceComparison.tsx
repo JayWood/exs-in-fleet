@@ -8,112 +8,114 @@ import {PriceComparisonType, UserSettings} from "@/lib/db/collections";
 import {Cog6ToothIcon} from "@heroicons/react/24/outline";
 
 interface Item {
-  typeId: number;
-  name: string;
+    typeId: number;
+    name: string;
 }
 
 interface systemInformation {
-  name: string;
-  systemId?: string;
-  structureId?: string;
+    name: string;
+    systemId?: string;
+    structureId?: string;
 }
 
 export interface PriceData {
-  source: number;
-  target: number;
-  targetStock: number;
-  item: Item;
+    source: number;
+    target: number;
+    targetStock: number;
+    item: Item;
 }
 
 const calculateDiffPercentage = (target: number, source: number): number => {
-  if (!source || 0 === source) {
-    return 0;
-  }
+    if (!source || 0 === source) {
+        return 0;
+    }
 
-  return Number((((target - source) / source) * 100).toFixed(2));
+    return Number((((target - source) / source) * 100).toFixed(2));
 }
 
-const PriceComparison = ({value}: { value: PriceComparisonType }) => {
-  const [editing, setEditing] = useState(false);
-  const defaultSettings = {
-    title: '',
-    source: {
-      name: '',
-      id: ''
-    },
-    target: {
-      name: '',
-      id: ''
-    },
-    items: []
-  }
-  const [componentState, setComponentState] = useState<PriceComparisonType>( defaultSettings );
+interface PriceComparisonProps {
+    value: PriceComparisonType;
+    onUpdate: (value: PriceComparisonType) => void;
+}
 
-  useEffect(() => {
-    setComponentState(value || defaultSettings );
-  }, [])
+const PriceComparison = ({value, onUpdate}: PriceComparisonProps) => {
+    const [editing, setEditing] = useState(false);
+    const defaultSettings = {
+        title: '',
+        source: {
+            name: '',
+            id: ''
+        },
+        target: {
+            name: '',
+            id: ''
+        },
+        items: []
+    }
+    const [componentState, setComponentState] = useState<PriceComparisonType>(defaultSettings);
 
-  return (
-    <div className="card card-border bg-base-100 card-md shadow-sm">
-      <div className="card-body">
-        <div className="flex justify-between items-center">
-          <div className="card-title">Testing</div>
-          <button
-            className="btn btn-link mb-2"
-            onClick={() => {
-              setEditing(!editing)
-            }}
-          >
-            <Cog6ToothIcon className="w-4 h-4 mr-1  text-gray-500 hover:text-gray-800"/>
-          </button>
+    useEffect(() => {
+        setComponentState(value || defaultSettings);
+    }, [])
+
+    return (
+        <div className="card card-border bg-base-100 card-md shadow-sm">
+            <div className="card-body">
+                <div className="flex justify-between items-center">
+                    <div className="card-title">{componentState.title}</div>
+                    <button
+                        className="btn btn-link mb-2"
+                        onClick={() => {
+                            setEditing(!editing)
+                        }}
+                    >
+                        <Cog6ToothIcon className="w-4 h-4 mr-1  text-gray-500 hover:text-gray-800"/>
+                    </button>
+                </div>
+                <div className="overflow-x-auto">
+                    {editing && <PriceComparisonForm
+                        value={componentState}
+                        onChange={(data: PriceComparisonType) => setComponentState(data)}
+                        onSubmit={() => {onUpdate(componentState); setEditing(false)}}
+                    />}
+                    {!editing && <>
+                        <table className="table table-xs table-zebra">
+                            <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>{`${componentState?.source?.name} Min-Sell`}</th>
+                                <th>{`${componentState?.target?.name} Stock`}</th>
+                                <th>{`${componentState?.target?.name} Min-Sell`}</th>
+                                <th>{`${componentState?.target?.name} Diff %`}</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {/*{*/}
+                            {/*    prices?.map(({source, target, targetStock, item}: PriceData, index) => {*/}
+                            {/*        const calculation = calculateDiffPercentage(target, source);*/}
+                            {/*        return (*/}
+                            {/*            <tr key={index}>*/}
+                            {/*                <td><Link className="link" href={`https://evetycoon.com/market/${item.typeId}`}*/}
+                            {/*                          target="_blank">{item.name}</Link></td>*/}
+                            {/*                <td>{source.toLocaleString()}</td>*/}
+                            {/*                <td>{targetStock.toLocaleString()}</td>*/}
+                            {/*                <td>{target.toLocaleString()}</td>*/}
+                            {/*                <td className="flex">*/}
+                            {/*                    <Chevron median={0} buffer={10} maxBuffer={20} value={calculation}>*/}
+                            {/*                        {calculation}%*/}
+                            {/*                    </Chevron>*/}
+                            {/*                </td>*/}
+                            {/*            </tr>*/}
+                            {/*        )*/}
+                            {/*    })*/}
+                            {/*}*/}
+                            </tbody>
+                        </table>
+                    </>}
+                </div>
+            </div>
         </div>
-        <div className="overflow-x-auto">
-          {editing && <PriceComparisonForm
-						value={componentState}
-						onChange={(data: PriceComparisonType) => setComponentState(data)}
-						onSubmit={() => {
-              axios.post('/api/user', {priceComparisons: [componentState]}).then(res => console.log(res.data))
-              // setEditing(false);
-            }}
-					/>}
-          {!editing && <>
-						<table className="table table-xs table-zebra">
-							<thead>
-							<tr>
-								<th>Name</th>
-								<th>{`${componentState?.source?.name} Min-Sell`}</th>
-								<th>{`${componentState?.target?.name} Stock`}</th>
-								<th>{`${componentState?.target?.name} Min-Sell`}</th>
-								<th>{`${componentState?.target?.name} Diff %`}</th>
-							</tr>
-							</thead>
-							<tbody>
-              {/*{*/}
-              {/*    prices?.map(({source, target, targetStock, item}: PriceData, index) => {*/}
-              {/*        const calculation = calculateDiffPercentage(target, source);*/}
-              {/*        return (*/}
-              {/*            <tr key={index}>*/}
-              {/*                <td><Link className="link" href={`https://evetycoon.com/market/${item.typeId}`}*/}
-              {/*                          target="_blank">{item.name}</Link></td>*/}
-              {/*                <td>{source.toLocaleString()}</td>*/}
-              {/*                <td>{targetStock.toLocaleString()}</td>*/}
-              {/*                <td>{target.toLocaleString()}</td>*/}
-              {/*                <td className="flex">*/}
-              {/*                    <Chevron median={0} buffer={10} maxBuffer={20} value={calculation}>*/}
-              {/*                        {calculation}%*/}
-              {/*                    </Chevron>*/}
-              {/*                </td>*/}
-              {/*            </tr>*/}
-              {/*        )*/}
-              {/*    })*/}
-              {/*}*/}
-							</tbody>
-						</table>
-					</>}
-        </div>
-      </div>
-    </div>
-  )
+    )
 };
 
 export default PriceComparison;
