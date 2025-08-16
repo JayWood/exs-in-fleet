@@ -148,7 +148,7 @@ export class Client {
 
     console.info('Cache hit - returning market stats from database');
     const aggregated = rows.reduce((acc, row) => {
-      const {typeId, buy, sell, structureId, ...rest} = row as MarketCache;
+      const {typeId, buy, sell, structureId} = row as MarketCache;
       acc[typeId] = {buy, sell, structureId};
       return acc;
     }, {} as AggregatedOrders);

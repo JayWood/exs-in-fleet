@@ -68,10 +68,7 @@ export async function POST(nextRequest: NextRequest) {
   const ajv = new Ajv();
   const validate = ajv.compile(userSettingsSchema);
 
-  console.log( JSON.stringify(payload, null, 2) );
-
   if (!validate(payload)) {
-    console.log( JSON.stringify(payload, null, 2) );
     return NextResponse.json({error: validate.errors}, {status: 400});
   }
 
