@@ -2,6 +2,10 @@ import {NextRequest, NextResponse} from "next/server";
 import {Client} from "@/lib/esi/Client";
 import {PriceData} from "@/components/client/PriceComparison/PriceComparison";
 import {fuzzworkStructures, getFuzzworksData} from "@/app/api/fuzzworks/route";
+import {readMany} from "@/lib/db/mongoHelpers";
+import {json} from "node:stream/consumers";
+import {AggregatedOrders, groupAndAggregate} from "@/lib/market";
+import {MarketCache, MarketCacheDocument} from "@/lib/db/collections";
 
 export type priceCompareParams = {
   sourceSystemId?: number
@@ -106,27 +110,38 @@ export function getPriceComparison( props?: priceCompareParams ) {
 
 const getStructureAggregatedOrders = async ( structureId: number, typeIds: number[] ) => {
   if ( fuzzworkStructures.some(s => s.station === structureId) ) {
-    return getFuzzworksData(structureId.toString(), typeIds.join(','))
+    const resp = await getFuzzworksData(structureId.toString(), typeIds.join(','));
+    return resp.json();
   }
 
+  console.log( typeIds );
+  const rows = await readMany( 'marketCache', { structureId: structureId, typeId: { $in: typeIds } } );
+  const aggregated = rows.reduce((acc, row) => {
+    const {typeId, buy, sell, structureId} = row as MarketCacheDocument;
+    acc[typeId] = {buy, sell, structureId};
+    return acc;
+  }, {} as AggregatedOrders);
 
+  return aggregated;
 }
 
 export async function GET( request: NextRequest ): Promise<NextResponse> {
   const {searchParams} = new URL( request.url );
-  const sourceSystemId = Number(searchParams.get('source'))
-  const targetStructureId = Number(searchParams.get('target'))
+  const sourceId = Number(searchParams.get('source'))
+  const targetId = Number(searchParams.get('target'))
   const itemIds = searchParams.get('itemIds')?.split(',').map(n=>Number(n)) || [];
 
   // Optionally validate inputs
-  if (isNaN(sourceSystemId) || isNaN(targetStructureId)) {
+  if (isNaN(sourceId) || isNaN(targetId)) {
     return NextResponse.json({error: 'Invalid parameters'}, {status: 400})
   }
 
+  const sourceOrders = await getStructureAggregatedOrders( sourceId, itemIds );
+  const targetOrders = await getStructureAggregatedOrders( targetId, itemIds );
 
+  // TODO: Merge and calculate both of these into the table.
+  console.log( { sourceOrders, targetOrders } );
 
-  const client = new Client(request);
-
-  const data: PriceData[] = getPriceComparison({sourceSystemId, targetStructureId, itemIds})
+  const data: PriceData[] = getPriceComparison({sourceSystemId: sourceId, targetStructureId: targetId, itemIds})
   return NextResponse.json(data)
 }
