@@ -6,6 +6,8 @@ import PriceComparisonForm from "@/components/client/PriceComparison/PriceCompar
 import axios from "axios";
 import {PriceComparisonType, UserSettings} from "@/lib/db/collections";
 import {Cog6ToothIcon, PencilSquareIcon, TrashIcon} from "@heroicons/react/24/outline";
+import Link from "next/link";
+import Chevron from "@/components/ui/Chevron";
 
 interface Item {
     typeId: number;
@@ -41,7 +43,6 @@ interface PriceComparisonProps {
 }
 
 const PriceComparison = ({value, onUpdate, onDelete, editMode}: PriceComparisonProps) => {
-    const [showEditingForm, setshowEditingForm] = useState(false);
     const defaultSettings = {
         title: '',
         source: {
@@ -54,11 +55,33 @@ const PriceComparison = ({value, onUpdate, onDelete, editMode}: PriceComparisonP
         },
         items: []
     }
-    const [componentState, setComponentState] = useState<PriceComparisonType>(defaultSettings);
+
+    const [showEditingForm, setshowEditingForm] = useState(false);
+    const [componentState, setComponentState] = useState<PriceComparisonType>(value || defaultSettings);
+    const [prices, setPrices] = useState<PriceData[]>([]);
+
+    // Set component state based on value if empty
+    useEffect(() => {
+        if (!componentState) {
+            setComponentState(value || defaultSettings);
+        }
+    }, [value, componentState])
 
     useEffect(() => {
-        setComponentState(value || defaultSettings);
-    }, [])
+        const {target, source, items} = componentState;
+        if (!target?.id || !source?.id || !items?.length) {
+            return;
+        }
+        if (prices.length === 0) {
+            const apiUrl = new URL('/api/market/comparisons', window.location.origin);
+            apiUrl.searchParams.append('target', target.id);
+            apiUrl.searchParams.append('source', source.id);
+            apiUrl.searchParams.append('itemIds', items.map(i => i.typeId).join(','));
+            axios.get(apiUrl.toString())
+              .then(res => setPrices(res.data))
+              .catch(err => console.error('Failed to fetch prices:', err));
+        }
+    }, [componentState, prices])
 
     return (
         <div className="card card-border bg-base-100 card-md shadow-sm">
@@ -102,25 +125,25 @@ const PriceComparison = ({value, onUpdate, onDelete, editMode}: PriceComparisonP
                             </tr>
                             </thead>
                             <tbody>
-                            {/*{*/}
-                            {/*    prices?.map(({source, target, targetStock, item}: PriceData, index) => {*/}
-                            {/*        const calculation = calculateDiffPercentage(target, source);*/}
-                            {/*        return (*/}
-                            {/*            <tr key={index}>*/}
-                            {/*                <td><Link className="link" href={`https://evetycoon.com/market/${item.typeId}`}*/}
-                            {/*                          target="_blank">{item.name}</Link></td>*/}
-                            {/*                <td>{source.toLocaleString()}</td>*/}
-                            {/*                <td>{targetStock.toLocaleString()}</td>*/}
-                            {/*                <td>{target.toLocaleString()}</td>*/}
-                            {/*                <td className="flex">*/}
-                            {/*                    <Chevron median={0} buffer={10} maxBuffer={20} value={calculation}>*/}
-                            {/*                        {calculation}%*/}
-                            {/*                    </Chevron>*/}
-                            {/*                </td>*/}
-                            {/*            </tr>*/}
-                            {/*        )*/}
-                            {/*    })*/}
-                            {/*}*/}
+                            {
+                                prices?.map(({source, target, targetStock, item}: PriceData, index) => {
+                                    const calculation = calculateDiffPercentage(target, source);
+                                    return (
+                                        <tr key={index}>
+                                            <td><Link className="link" href={`https://evetycoon.com/market/${item.typeId}`}
+                                                      target="_blank">{item.name}</Link></td>
+                                            <td>{source.toLocaleString()}</td>
+                                            <td>{targetStock.toLocaleString()}</td>
+                                            <td>{target.toLocaleString()}</td>
+                                            <td className="flex">
+                                                <Chevron median={0} buffer={10} maxBuffer={20} value={calculation}>
+                                                    {calculation}%
+                                                </Chevron>
+                                            </td>
+                                        </tr>
+                                    )
+                                })
+                            }
                             </tbody>
                         </table>
                     </>}

@@ -104,9 +104,11 @@ export function getPriceComparison( props?: priceCompareParams ) {
 
 export async function GET( request: NextRequest ): Promise<NextResponse> {
   const {searchParams} = new URL( request.url );
-  const sourceSystemId = Number(searchParams.get('sourceSystemId'))
-  const targetStructureId = Number(searchParams.get('targetStructureId'))
+  const sourceSystemId = Number(searchParams.get('source'))
+  const targetStructureId = Number(searchParams.get('target'))
   const itemIds = searchParams.get('itemIds')?.split(',').map(n=>Number(n)) || [];
+
+  console.log(sourceSystemId, targetStructureId, itemIds);
 
   // Optionally validate inputs
   if (isNaN(sourceSystemId) || isNaN(targetStructureId)) {
