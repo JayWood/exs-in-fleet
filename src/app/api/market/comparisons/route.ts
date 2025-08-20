@@ -1,5 +1,7 @@
 import {NextRequest, NextResponse} from "next/server";
+import {Client} from "@/lib/esi/Client";
 import {PriceData} from "@/components/client/PriceComparison/PriceComparison";
+import {fuzzworkStructures, getFuzzworksData} from "@/app/api/fuzzworks/route";
 
 export type priceCompareParams = {
   sourceSystemId?: number
@@ -102,18 +104,28 @@ export function getPriceComparison( props?: priceCompareParams ) {
   ];
 }
 
+const getStructureAggregatedOrders = async ( structureId: number, typeIds: number[] ) => {
+  if ( fuzzworkStructures.some(s => s.station === structureId) ) {
+    return getFuzzworksData(structureId.toString(), typeIds.join(','))
+  }
+
+
+}
+
 export async function GET( request: NextRequest ): Promise<NextResponse> {
   const {searchParams} = new URL( request.url );
   const sourceSystemId = Number(searchParams.get('source'))
   const targetStructureId = Number(searchParams.get('target'))
   const itemIds = searchParams.get('itemIds')?.split(',').map(n=>Number(n)) || [];
 
-  console.log(sourceSystemId, targetStructureId, itemIds);
-
   // Optionally validate inputs
   if (isNaN(sourceSystemId) || isNaN(targetStructureId)) {
     return NextResponse.json({error: 'Invalid parameters'}, {status: 400})
   }
+
+
+
+  const client = new Client(request);
 
   const data: PriceData[] = getPriceComparison({sourceSystemId, targetStructureId, itemIds})
   return NextResponse.json(data)
