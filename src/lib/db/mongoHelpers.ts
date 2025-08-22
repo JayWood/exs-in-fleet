@@ -10,7 +10,7 @@ async function createOne<T extends Document>(
   return db.collection<T>(collection).insertOne(doc)
 }
 
-async function readOne<T extends Document>(
+async function readOne<T extends {}>(
   collection: string,
   filter: Record<string, any>,
   projection?: Record<string, 1 | 0>
@@ -20,7 +20,7 @@ async function readOne<T extends Document>(
   return db.collection<T>(collection).findOne(filter, {projection})
 }
 
-async function readMany<T extends Document>(
+async function readMany<T extends {}>(
   collection: string,
   filter: Record<string, any>,
   projection?: Record<string, 1 | 0>

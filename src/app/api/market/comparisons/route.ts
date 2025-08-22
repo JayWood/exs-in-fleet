@@ -2,15 +2,21 @@ import {NextRequest, NextResponse} from "next/server";
 import {Client} from "@/lib/esi/Client";
 import {PriceData} from "@/components/client/PriceComparison/PriceComparison";
 import {fuzzworkStructures, getFuzzworksData} from "@/app/api/fuzzworks/route";
-import {readMany} from "@/lib/db/mongoHelpers";
+import {createProjection, readMany, readOne} from "@/lib/db/mongoHelpers";
 import {json} from "node:stream/consumers";
 import {AggregatedOrders, groupAndAggregate} from "@/lib/market";
-import {MarketCache, MarketCacheDocument} from "@/lib/db/collections";
+import {InvTypeDocument, MarketCache, MarketCacheDocument} from "@/lib/db/collections";
 
 export type priceCompareParams = {
   sourceSystemId?: number
   targetStructureId?: number
   itemIds?: number[]
+}
+
+type MarketOrder = {
+  buy: number[]
+  sell: number[]
+  structureId: number
 }
 
 export function getPriceComparison( props?: priceCompareParams ) {
@@ -114,34 +120,47 @@ const getStructureAggregatedOrders = async ( structureId: number, typeIds: numbe
     return resp.json();
   }
 
-  console.log( typeIds );
   const rows = await readMany( 'marketCache', { structureId: structureId, typeId: { $in: typeIds } } );
-  const aggregated = rows.reduce((acc, row) => {
+  return rows.reduce((acc, row) => {
     const {typeId, buy, sell, structureId} = row as MarketCacheDocument;
     acc[typeId] = {buy, sell, structureId};
     return acc;
   }, {} as AggregatedOrders);
-
-  return aggregated;
 }
 
-export async function GET( request: NextRequest ): Promise<NextResponse> {
-  const {searchParams} = new URL( request.url );
+const getMinSellPrice = (orders, typeId: number): number => {
+  const order = orders[typeId];
+  if (!order?.sell?.length) return 0;
+  return Math.min(...order.sell);
+};
+
+const formatPriceData = async (sourceOrders: AggregatedOrders, targetOrders: AggregatedOrders, itemIds: number[]): Promise<PriceData[]> => {
+  const typeMap = await readMany<InvTypeDocument>( 'invTypes', { typeID: { $in: itemIds } }, createProjection( ['typeID', 'typeName'] ) );
+  return itemIds.map(typeId => ({
+    source: sourceOrders[typeId]?.sell?.min || 0,
+    target: targetOrders[typeId]?.sell?.min || 0,
+    targetStock: targetOrders[typeId]?.sell?.volume || 0,
+    item: {
+      typeId,
+      name: typeMap.find(t => t.typeID === typeId)?.typeName || 'Unknown',
+    }
+  }) as PriceData);
+};
+
+export async function GET(request: NextRequest): Promise<NextResponse> {
+  const {searchParams} = new URL(request.url);
   const sourceId = Number(searchParams.get('source'))
   const targetId = Number(searchParams.get('target'))
-  const itemIds = searchParams.get('itemIds')?.split(',').map(n=>Number(n)) || [];
+  const itemIds = searchParams.get('itemIds')?.split(',').map(n => Number(n)) || [];
 
   // Optionally validate inputs
   if (isNaN(sourceId) || isNaN(targetId)) {
     return NextResponse.json({error: 'Invalid parameters'}, {status: 400})
   }
 
-  const sourceOrders = await getStructureAggregatedOrders( sourceId, itemIds );
-  const targetOrders = await getStructureAggregatedOrders( targetId, itemIds );
+  const sourceOrders = await getStructureAggregatedOrders(sourceId, itemIds);
+  const targetOrders = await getStructureAggregatedOrders(targetId, itemIds);
 
-  // TODO: Merge and calculate both of these into the table.
-  console.log( { sourceOrders, targetOrders } );
-
-  const data: PriceData[] = getPriceComparison({sourceSystemId: sourceId, targetStructureId: targetId, itemIds})
+  const data: PriceData[] = await formatPriceData(sourceOrders, targetOrders, itemIds);
   return NextResponse.json(data)
 }

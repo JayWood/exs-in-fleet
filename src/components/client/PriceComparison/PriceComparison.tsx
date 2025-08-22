@@ -132,9 +132,9 @@ const PriceComparison = ({value, onUpdate, onDelete, editMode}: PriceComparisonP
                                         <tr key={index}>
                                             <td><Link className="link" href={`https://evetycoon.com/market/${item.typeId}`}
                                                       target="_blank">{item.name}</Link></td>
-                                            <td>{source.toLocaleString()}</td>
-                                            <td>{targetStock.toLocaleString()}</td>
-                                            <td>{target.toLocaleString()}</td>
+                                            <td>{Math.ceil(source).toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
+                                            <td>{Math.ceil(targetStock).toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
+                                            <td>{Math.ceil(target).toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
                                             <td className="flex">
                                                 <Chevron median={0} buffer={10} maxBuffer={20} value={calculation}>
                                                     {calculation}%
