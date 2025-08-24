@@ -17,25 +17,24 @@ export async function GET( request: NextRequest ): Promise<NextResponse> {
     const {searchParams} = new URL( request.url );
     const search = searchParams.get('s')?.toString()
     const groupId = searchParams.get('marketGroupID')?.toString()
-    let data = null;
-
-    if (search && groupId) {
-        return NextResponse.json(
-            { error: 'Only one of [s] or [group] may be used at a time.' },
-            { status: 400 }
-        )
-    }
+    const typeIds = searchParams.get('typeIds')?.toString()
 
     if (search) {
-        data = await searchByName( search );
-    } else if (groupId) {
-        data = await searchByMarketGroupID( Number( groupId ) )
-    } else {
-        return NextResponse.json(
-            { error: 'Missing required query param: [s] or [group]' },
-            { status: 400 }
-        )
+        return NextResponse.json( await searchByName( search ) );
     }
 
-    return NextResponse.json(data)
+    if (groupId) {
+        return NextResponse.json( await searchByMarketGroupID( Number( groupId ) ) );
+    }
+
+    if (typeIds && typeIds.length > 0 && typeIds.includes(',')) {
+        const typeIdsArray = typeIds.split(',').map(Number);
+        const filter: Filter<InvType> = {typeID: { $in: typeIdsArray }}
+        return NextResponse.json(await readMany( 'invTypes', filter ) );
+    }
+
+    return NextResponse.json(
+        { error: 'Missing required query param: [s] or [group]' },
+        { status: 400 }
+    )
 }

@@ -17,9 +17,11 @@ const PriceComparisonForm = ({onChange, value, onSubmit}: PriceComparisonFormPro
   const [searchResults, setSearchResults] = useState<GenericObject[]>([])
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [searchType, setSearchType] = useState<string>('string');
   const timeoutId = useRef<NodeJS.Timeout | null>(null);
 
   const searchItems = async (query: string) => {
+    setSearchType('string');
     setIsSearching(true);
     await axios.get(`/api/eve/sde/invTypes?s=${query}`).then(res => {
       setSearchResults(res.data.map((item?: InvTypeDocument) => ({
@@ -123,7 +125,7 @@ const PriceComparisonForm = ({onChange, value, onSubmit}: PriceComparisonFormPro
               <input
                 type="search"
                 className="grow"
-                placeholder="Search"
+                placeholder="Search - or 123,4546,789"
                 list="searchResults"
                 value={searchQuery}
                 onChange={(evt) => {
@@ -133,7 +135,23 @@ const PriceComparisonForm = ({onChange, value, onSubmit}: PriceComparisonFormPro
                   }
 
                   setSearchQuery(searchQuery);
-                  if (searchQuery.length < 3) {
+                  const isTypeIdList = /^\d+(,\d+)*$/.test(searchQuery);
+                  if (isTypeIdList) {
+                    setIsSearching(true);
+                    setSearchType('typeId');
+                    const typeIds = searchQuery.split(',').map(id => parseInt(id.trim()));
+                    axios.get(`/api/eve/sde/invTypes?typeIds=${typeIds.join(',')}`).then(res => {
+                      setIsSearching(false);
+                      const r = res.data.map((item?: InvTypeDocument) => ({
+                        typeId: item?.typeID,
+                        name: item?.typeName
+                      }));
+                      setSearchResults( r );
+                    });
+                    return;
+                  }
+
+                  if (searchQuery.length < 3 || isTypeIdList) {
                     return;
                   }
 
@@ -153,10 +171,18 @@ const PriceComparisonForm = ({onChange, value, onSubmit}: PriceComparisonFormPro
             <button
               type="button"
               className="btn btn-primary"
-              disabled={searchQuery.length === 0
-                || !searchResults.some(item => item.name.toLowerCase().includes(searchQuery.toLowerCase()))
-                || isSearching}
+              disabled={
+                searchQuery.length === 0
+                || isSearching
+                || ( !searchResults.some(item => item.name.toLowerCase().includes(searchQuery.toLowerCase())) && searchType === 'string' )
+              }
               onClick={() => {
+                if ( searchType === 'typeId' ) {
+                  onChange( {...value, items: [...value?.items, ...searchResults ] } );
+                  setSearchQuery('');
+                  return;
+                }
+
                 const result = searchResults.find(item => item.name.toLowerCase().includes(searchQuery.toLowerCase()));
                 if (result) {
                   onChange({...value, items: [...value?.items, result]});
@@ -164,7 +190,7 @@ const PriceComparisonForm = ({onChange, value, onSubmit}: PriceComparisonFormPro
                 setSearchQuery('');
               }}
             >
-              Add Item
+              Add
             </button>
           </div>
 
