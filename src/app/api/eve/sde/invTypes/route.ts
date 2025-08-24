@@ -27,8 +27,9 @@ export async function GET( request: NextRequest ): Promise<NextResponse> {
         return NextResponse.json( await searchByMarketGroupID( Number( groupId ) ) );
     }
 
-    if (typeIds && typeIds.length > 0 && typeIds.includes(',')) {
-        const typeIdsArray = typeIds.split(',').map(Number);
+    if (typeIds && typeIds.length > 0 && /^\d+(?:[,\s]\d+)*$/.test(typeIds)) {
+        const separator = typeIds.includes(',') ? ',' : ' ';
+        const typeIdsArray = typeIds.split(separator).map(Number);
         const filter: Filter<InvType> = {typeID: { $in: typeIdsArray }}
         return NextResponse.json(await readMany( 'invTypes', filter ) );
     }

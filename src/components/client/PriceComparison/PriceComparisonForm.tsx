@@ -125,7 +125,7 @@ const PriceComparisonForm = ({onChange, value, onSubmit}: PriceComparisonFormPro
               <input
                 type="search"
                 className="grow"
-                placeholder="Search - or 123,4546,789"
+                placeholder="Search - or use type IDs, separated by comma/space: ie. 1,2,3,4,5"
                 list="searchResults"
                 value={searchQuery}
                 onChange={(evt) => {
@@ -135,11 +135,12 @@ const PriceComparisonForm = ({onChange, value, onSubmit}: PriceComparisonFormPro
                   }
 
                   setSearchQuery(searchQuery);
-                  const isTypeIdList = /^\d+(,\d+)*$/.test(searchQuery);
+                  const isTypeIdList = /^\d+(?:[,\s]\d+)*$/.test(searchQuery);
                   if (isTypeIdList) {
                     setIsSearching(true);
                     setSearchType('typeId');
-                    const typeIds = searchQuery.split(',').map(id => parseInt(id.trim()));
+                    const separator = searchQuery.includes(',') ? ',' : ' ';
+                    const typeIds = searchQuery.split(separator).map(id => parseInt(id.trim()));
                     axios.get(`/api/eve/sde/invTypes?typeIds=${typeIds.join(',')}`).then(res => {
                       setIsSearching(false);
                       const r = res.data.map((item?: InvTypeDocument) => ({
