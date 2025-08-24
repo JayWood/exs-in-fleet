@@ -71,3 +71,31 @@ export function calcIndustryActivityMaterials( materials: IndustryActivityMateri
         quantity: calcInputQty({baseQty: material.quantity, bpME, structureME} )
     } } );
 }
+
+export interface MarketOrder {
+    name: string;
+    quantity: number;
+    price: number;
+    total: number;
+}
+
+export function parseMarketOrderPaste(orders: string): MarketOrderPaste[] {
+    if (!orders?.trim()) {
+        return [];
+    }
+
+    return orders
+      .split('\n')
+      .filter(line => line.trim() && !line.toLowerCase().startsWith('total:'))
+      .map(line => {
+          const [name, quantity, price] = line.split('\t');
+          const cleanPrice = price.replace(/,/g, '').replace(/\.00$/, '');
+
+          return {
+              name: name.trim(),
+              quantity: parseInt(quantity),
+              price: parseFloat(cleanPrice),
+              total: parseInt(quantity) * parseFloat(cleanPrice)
+          };
+      });
+}
