@@ -76,10 +76,11 @@ export interface MarketOrder {
     name: string;
     quantity: number;
     price: number;
+    netPrice: number;
     total: number;
 }
 
-export function parseMarketOrderPaste(orders: string): MarketOrderPaste[] {
+export function parseMarketOrderPaste(orders: string, undercutPercentage: number): MarketOrderPaste[] {
     if (!orders?.trim()) {
         return [];
     }
@@ -95,6 +96,7 @@ export function parseMarketOrderPaste(orders: string): MarketOrderPaste[] {
               name: name.trim(),
               quantity: parseInt(quantity),
               price: parseFloat(cleanPrice),
+              netPrice: parseFloat(cleanPrice) * (1 - undercutPercentage / 100),
               total: parseInt(quantity) * parseFloat(cleanPrice)
           };
       });
