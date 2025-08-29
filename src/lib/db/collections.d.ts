@@ -252,3 +252,63 @@ export type MarketCache = {
 
 export type MarketCacheDocument = WithID<MarketCache>
 export type MarketCacheInsert = OptionalUnlessRequiredId<MarketCache>
+
+// --- Product within a batch ---
+export interface BatchProduct {
+  type_id: number
+  name: string
+  me?: number
+  runs: number
+  quantity_per_run?: number
+  total_quantity?: number
+  estimated_unit_price?: number
+}
+
+// --- Market order linked to a batch ---
+export interface BatchMarketOrder {
+  order_id: number
+  type_id: number
+  location_id?: number
+  quantity: number
+  price: number
+  total: number
+  issued_at?: Date
+  is_sold?: boolean
+}
+
+// --- Batch document ---
+export interface BatchType {
+  name: string
+  status?: 'planned' | 'in_progress' | 'completed' | 'canceled'
+  created_at?: Date
+  started_at?: Date
+  completed_at?: Date
+
+  costs?: {
+    materials?: number
+    job_fee?: number
+    taxes?: number
+    broker_fee?: number
+    scc_surcharge?: number
+    total?: number
+  }
+
+  products: BatchProduct[]
+  market_orders?: BatchMarketOrder[]
+
+  revenue?: {
+    expected?: number
+    actual?: number
+  }
+
+  profit?: {
+    expected?: number
+    actual?: number
+  }
+
+  owner_id?: ObjectId
+  notes?: string
+}
+
+export type BatchTypeDocument = WithId<BatchType>
+export type BatchTypeInsert = OptionalUnlessRequiredId<BatchType>
