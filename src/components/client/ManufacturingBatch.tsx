@@ -1,4 +1,4 @@
-import CardMedium from "@/components/ui/CardMedium";
+import CardMedium from '@/components/ui/CardMedium'
 
 /**
  * Calculates final material requirement for EVE Online industry job.
@@ -10,32 +10,37 @@ import CardMedium from "@/components/ui/CardMedium";
  * @returns Final rounded-up material requirement.
  */
 function calculateFinalMaterial(
-    baseMaterial: number,
-    meLevel: number,
-    rigBonusPercent: number = 0,
-    implantBonusPercent: number = 0
+  baseMaterial: number,
+  meLevel: number,
+  rigBonusPercent: number = 0,
+  implantBonusPercent: number = 0
 ): number {
-    if (meLevel < 0 || meLevel > 10) {
-        throw new Error("ME level must be between 0 and 10.");
-    }
+  if (meLevel < 0 || meLevel > 10) {
+    throw new Error('ME level must be between 0 and 10.')
+  }
 
-    const meReduction: number = 1 - 1 / (1 + meLevel);
-    const rigReduction: number = rigBonusPercent / 100;
-    const implantReduction: number = implantBonusPercent / 100;
+  const meReduction: number = 1 - 1 / (1 + meLevel)
+  const rigReduction: number = rigBonusPercent / 100
+  const implantReduction: number = implantBonusPercent / 100
 
-    const finalMaterial: number =
-        baseMaterial * (1 - meReduction) * (1 - rigReduction) * (1 - implantReduction);
+  const finalMaterial: number =
+    baseMaterial *
+    (1 - meReduction) *
+    (1 - rigReduction) *
+    (1 - implantReduction)
 
-    return Math.ceil(finalMaterial);
+  return Math.ceil(finalMaterial)
 }
 
 const ManufacturingBatch = () => {
-    return ( <CardMedium cardTitle={'Manufacturing Batch'}>
-        <fieldset className="fieldset">
-            <legend className="fieldset-legend">Your bio</legend>
-            <textarea className="textarea h-24" placeholder="Bio"></textarea>
-        </fieldset>
-    </CardMedium> )
-};
+  return (
+    <CardMedium cardTitle={'Manufacturing Batch'}>
+      <fieldset className="fieldset">
+        <legend className="fieldset-legend">Your bio</legend>
+        <textarea className="textarea h-24" placeholder="Bio"></textarea>
+      </fieldset>
+    </CardMedium>
+  )
+}
 
-export default ManufacturingBatch;
+export default ManufacturingBatch

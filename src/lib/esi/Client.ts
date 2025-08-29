@@ -1,18 +1,38 @@
-import {CorporationWallet, CorporationWalletJournalEntry, CorporationWalletTransaction} from "@/types/esi/Wallet";
-import {NextRequest, NextResponse} from "next/server";
-import {MarketOrder} from "@/types/esi/Markets";
-import {AggregatedOrders, groupAndAggregate, marketCacheGet, marketCacheSet} from "@/lib/market";
-import {MarketCache, MarketCacheDocument, MarketCacheInsert, UserDocument} from "@/lib/db/collections";
-import {refreshToken} from "@/lib/authEveOnline";
-import {readOne} from "@/lib/db/mongoHelpers";
+import {
+  CorporationWallet,
+  CorporationWalletJournalEntry,
+  CorporationWalletTransaction
+} from '@/types/esi/Wallet'
+import { NextRequest, NextResponse } from 'next/server'
+import { MarketOrder } from '@/types/esi/Markets'
+import {
+  AggregatedOrders,
+  groupAndAggregate,
+  marketCacheGet,
+  marketCacheSet
+} from '@/lib/market'
+import {
+  MarketCache,
+  MarketCacheDocument,
+  MarketCacheInsert,
+  UserDocument
+} from '@/lib/db/collections'
+import { refreshToken } from '@/lib/authEveOnline'
+import { readOne } from '@/lib/db/mongoHelpers'
 
 export class Client {
   private baseUrl: string = 'https://esi.evetech.net/latest'
-  private nextRequest: NextRequest;
-  private allowedHeaders: string[] = ['cache-control', 'etag', 'expires', 'last-modified', 'x-pages'];
+  private nextRequest: NextRequest
+  private allowedHeaders: string[] = [
+    'cache-control',
+    'etag',
+    'expires',
+    'last-modified',
+    'x-pages'
+  ]
 
   constructor(request: NextRequest) {
-    this.nextRequest = request;
+    this.nextRequest = request
   }
 
   /**
@@ -21,8 +41,11 @@ export class Client {
    * @param path
    * @param options
    */
-  pubRequest<T>(path: string, options: RequestInit | undefined): Promise<NextResponse<T>> {
-    return this.request(path, options);
+  pubRequest<T>(
+    path: string,
+    options: RequestInit | undefined
+  ): Promise<NextResponse<T>> {
+    return this.request(path, options)
   }
 
   /**
@@ -33,45 +56,82 @@ export class Client {
    * @param path
    * @param options
    */
-  async authRequest<T>(path: string, options: RequestInit | undefined = {}): Promise<NextResponse<T>> {
-    const characterData = this.nextRequest.cookies.get('character')?.value;
-    if ( ! characterData ) {
-      throw new Error('Not logged in.');
+  async authRequest<T>(
+    path: string,
+    options: RequestInit | undefined = {}
+  ): Promise<NextResponse<T>> {
+    const characterData = this.nextRequest.cookies.get('character')?.value
+    if (!characterData) {
+      throw new Error('Not logged in.')
     }
 
-    const [name,playerId] = characterData.split('|');
-    const userDocument = await readOne<UserDocument>( 'eveUsers', {playerId: parseInt(playerId)} );
-    const {access_token} = await refreshToken(userDocument.refresh_token);
-    return this.request(path, {...options, headers: {...options?.headers, Authorization: `Bearer ${access_token}`}});
+    const [name, playerId] = characterData.split('|')
+    const userDocument = await readOne<UserDocument>('eveUsers', {
+      playerId: parseInt(playerId)
+    })
+    const { access_token } = await refreshToken(userDocument.refresh_token)
+    return this.request(path, {
+      ...options,
+      headers: { ...options?.headers, Authorization: `Bearer ${access_token}` }
+    })
   }
 
   // Corporation overloads
-  wallet(corpId: string, endpoint: 'wallets'): Promise<NextResponse<CorporationWallet[]>>;
-  wallet(corpId: string, endpoint: 'wallets', division: string, type: 'journal'): Promise<NextResponse<CorporationWalletJournalEntry[]>>;
-  wallet(corpId: string, endpoint: 'wallets', division: string, type: 'transactions'): Promise<NextResponse<CorporationWalletTransaction[]>>;
+  wallet(
+    corpId: string,
+    endpoint: 'wallets'
+  ): Promise<NextResponse<CorporationWallet[]>>
+  wallet(
+    corpId: string,
+    endpoint: 'wallets',
+    division: string,
+    type: 'journal'
+  ): Promise<NextResponse<CorporationWalletJournalEntry[]>>
+  wallet(
+    corpId: string,
+    endpoint: 'wallets',
+    division: string,
+    type: 'transactions'
+  ): Promise<NextResponse<CorporationWalletTransaction[]>>
   async wallet(
     corpId: string,
     endpoint?: string,
     division?: string,
     type?: string
-  ): Promise<NextResponse<CorporationWallet[] | CorporationWalletJournalEntry[] | CorporationWalletTransaction[]>> {
-    let path = `/corporations/${corpId}`;
+  ): Promise<
+    NextResponse<
+      | CorporationWallet[]
+      | CorporationWalletJournalEntry[]
+      | CorporationWalletTransaction[]
+    >
+  > {
+    let path = `/corporations/${corpId}`
 
     if (endpoint === 'wallets') {
-      path += '/wallets';
+      path += '/wallets'
       if (division && type) {
-        path += `/${division}/${type}`;
+        path += `/${division}/${type}`
       }
     }
 
-    return this.authRequest<CorporationWallet[] | CorporationWalletJournalEntry[] | CorporationWalletTransaction[]>(path);
+    return this.authRequest<
+      | CorporationWallet[]
+      | CorporationWalletJournalEntry[]
+      | CorporationWalletTransaction[]
+    >(path)
   }
 
   // Market Overloads
-  markets(endpoint: 'structures', structureId: string): Promise<NextResponse<MarketOrder[]>>;
-  async markets(endpoint: string, structureId: string): Promise<NextResponse<MarketOrder[]>> {
-    const path = `/markets/${endpoint}/${structureId}`;
-    return this.authRequest<MarketOrder[]>(path);
+  markets(
+    endpoint: 'structures',
+    structureId: string
+  ): Promise<NextResponse<MarketOrder[]>>
+  async markets(
+    endpoint: string,
+    structureId: string
+  ): Promise<NextResponse<MarketOrder[]>> {
+    const path = `/markets/${endpoint}/${structureId}`
+    return this.authRequest<MarketOrder[]>(path)
   }
 
   /**
@@ -82,77 +142,95 @@ export class Client {
    * @private
    */
   private async request(endpoint: string, options: RequestInit = {}) {
-    const url = new URL(endpoint, this.baseUrl);
-    const originalParams = this.nextRequest.nextUrl.searchParams;
+    const url = new URL(endpoint, this.baseUrl)
+    const originalParams = this.nextRequest.nextUrl.searchParams
     originalParams.forEach((value, key) => {
-      url.searchParams.append(key, value);
-    });
+      url.searchParams.append(key, value)
+    })
 
     const response = await fetch(url.toString(), {
       headers: {
         'Content-Type': 'application/json',
-        ...options.headers,
+        ...options.headers
       },
-      ...options,
-    });
+      ...options
+    })
 
     if (!response.ok) {
-      throw new Error(`ESI request failed: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `ESI request failed: ${response.status} ${response.statusText}`
+      )
     }
 
-    const responseJson = await response.json();
-    const nextResponse = NextResponse.json(responseJson);
+    const responseJson = await response.json()
+    const nextResponse = NextResponse.json(responseJson)
     response.headers.forEach((value, key) => {
-      if (this.allowedHeaders.includes(key.toLowerCase()) || key.toLowerCase().startsWith('x-esi-')) {
-        nextResponse.headers.set(key, value);
+      if (
+        this.allowedHeaders.includes(key.toLowerCase()) ||
+        key.toLowerCase().startsWith('x-esi-')
+      ) {
+        nextResponse.headers.set(key, value)
       }
-    });
+    })
 
-    return nextResponse;
+    return nextResponse
   }
 
-  private async fetchAllMarketOrders(endpoint: string, structureId: string, page = 1, allOrders: MarketOrder[] = []): Promise<MarketOrder[]> {
-    const res = await this.markets('structures', structureId + `/?page=${page}`);
-    const data = await res.json() as MarketOrder[];
+  private async fetchAllMarketOrders(
+    endpoint: string,
+    structureId: string,
+    page = 1,
+    allOrders: MarketOrder[] = []
+  ): Promise<MarketOrder[]> {
+    const res = await this.markets('structures', structureId + `/?page=${page}`)
+    const data = (await res.json()) as MarketOrder[]
 
-    console.info(`Fetching market orders - Page ${page}`);
+    console.info(`Fetching market orders - Page ${page}`)
 
-    const totalPages = parseInt(res.headers.get('x-pages') || '1');
-    const combined = [...allOrders, ...data];
+    const totalPages = parseInt(res.headers.get('x-pages') || '1')
+    const combined = [...allOrders, ...data]
 
     if (page < totalPages) {
-      return this.fetchAllMarketOrders(endpoint, structureId, page + 1, combined);
+      return this.fetchAllMarketOrders(
+        endpoint,
+        structureId,
+        page + 1,
+        combined
+      )
     } else {
-      return combined;
+      return combined
     }
   }
 
-  async getAggregatedMarketStats(endpoint: string, structureId: string): Promise<NextResponse<AggregatedOrders>> {
-    console.info('Checking database cache for market stats...');
-    const rows = await marketCacheGet( {structureId: parseInt(structureId)} );
+  async getAggregatedMarketStats(
+    endpoint: string,
+    structureId: string
+  ): Promise<NextResponse<AggregatedOrders>> {
+    console.info('Checking database cache for market stats...')
+    const rows = await marketCacheGet({ structureId: parseInt(structureId) })
     if (!rows || rows.length === 0) {
-      console.info('Cache miss - fetching market stats from API...');
-      const allOrders = await this.fetchAllMarketOrders(endpoint, structureId);
-      const result = groupAndAggregate(allOrders, structureId);
-      const jsonData = await result.json();
+      console.info('Cache miss - fetching market stats from API...')
+      const allOrders = await this.fetchAllMarketOrders(endpoint, structureId)
+      const result = groupAndAggregate(allOrders, structureId)
+      const jsonData = await result.json()
       const documents = Object.entries(jsonData).map(([typeId, stats]) => ({
-        ...stats as AggregatedOrders[number],
+        ...(stats as AggregatedOrders[number]),
         typeId: parseInt(typeId),
         createdAt: new Date(),
         structureId: parseInt(structureId)
-      }));
+      }))
 
-      await marketCacheSet( documents );
-      return NextResponse.json(jsonData);
+      await marketCacheSet(documents)
+      return NextResponse.json(jsonData)
     }
 
-    console.info('Cache hit - returning market stats from database');
+    console.info('Cache hit - returning market stats from database')
     const aggregated = rows.reduce((acc, row) => {
-      const {typeId, buy, sell, structureId} = row as MarketCache;
-      acc[typeId] = {buy, sell, structureId};
-      return acc;
-    }, {} as AggregatedOrders);
+      const { typeId, buy, sell, structureId } = row as MarketCache
+      acc[typeId] = { buy, sell, structureId }
+      return acc
+    }, {} as AggregatedOrders)
 
-    return NextResponse.json(aggregated);
+    return NextResponse.json(aggregated)
   }
 }

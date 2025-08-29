@@ -1,256 +1,254 @@
-import {OptionalUnlessRequiredId, WithId} from 'mongodb'
+import { OptionalUnlessRequiredId, WithId } from 'mongodb'
 
 export type IndustryActivityMaterial = {
-    activityID: number;
-    materialTypeID: number;
-    quantity: number;
-    typeID: number;
+  activityID: number
+  materialTypeID: number
+  quantity: number
+  typeID: number
 }
 export type IndustryActivityMaterialDocument = WithId<IndustryActivityMaterial>
 
-
 export interface IndustryActivityProbabilities {
-    activityID: number
-    probability: number
-    productTypeID: number
-    typeID: number
+  activityID: number
+  probability: number
+  productTypeID: number
+  typeID: number
 }
-export type IndustryActivityProbabilitiesDocument = WithId<IndustryActivityProbabilities>
+export type IndustryActivityProbabilitiesDocument =
+  WithId<IndustryActivityProbabilities>
 
 export interface IndustryActivityProduct {
-    activityID: number
-    productTypeID: number
-    quantity: number
-    typeID: number
+  activityID: number
+  productTypeID: number
+  quantity: number
+  typeID: number
 }
 export type IndustryActivityProductDocument = WithId<IndustryActivityProduct>
 
-
 export interface IndustryBlueprint {
-    maxProductionLimit: number
-    typeID: number
+  maxProductionLimit: number
+  typeID: number
 }
 export type IndustryBlueprintDocument = WithId<IndustryBlueprint>
 
 export interface InvCategory {
-    categoryID: number
-    categoryName: string
-    iconID: number | "None"
-    published: number
+  categoryID: number
+  categoryName: string
+  iconID: number | 'None'
+  published: number
 }
 export type InvCategoryDocument = WithId<InvCategory>
 
 export interface InvGroup {
-    anchorable: number
-    anchored: number
-    categoryID: number
-    fittableNonSingleton: number
-    groupID: number
-    groupName: string
-    iconID: number | "None"
-    published: number
-    useBasePrice: number
+  anchorable: number
+  anchored: number
+  categoryID: number
+  fittableNonSingleton: number
+  groupID: number
+  groupName: string
+  iconID: number | 'None'
+  published: number
+  useBasePrice: number
 }
 export type InvGroupDocument = WithId<InvGroup>
 
 export interface InvMarketGroup {
-    description: string
-    hasTypes: number
-    iconID: number
-    marketGroupID: number
-    marketGroupName: string
-    parentGroupID: number | "None"
+  description: string
+  hasTypes: number
+  iconID: number
+  marketGroupID: number
+  marketGroupName: string
+  parentGroupID: number | 'None'
 }
 export type InvMarketGroupDocument = WithId<InvMarketGroup>
 
 export interface InvType {
-    basePrice: number | "None"
-    capacity: number
-    description: string
-    graphicID: number
-    groupID: number
-    iconID: number | "None"
-    marketGroupID: number | "None"
-    mass: number
-    portionSize: number
-    published: number
-    raceID: number | "None"
-    soundID: number | "None"
-    typeID: number
-    typeName: string
-    volume: number
+  basePrice: number | 'None'
+  capacity: number
+  description: string
+  graphicID: number
+  groupID: number
+  iconID: number | 'None'
+  marketGroupID: number | 'None'
+  mass: number
+  portionSize: number
+  published: number
+  raceID: number | 'None'
+  soundID: number | 'None'
+  typeID: number
+  typeName: string
+  volume: number
 }
 export type InvTypeDocument = WithId<InvType>
 
 export interface InvVolume {
-    typeID: number
-    volume: number
+  typeID: number
+  volume: number
 }
 export type InvVolumeDocument = WithId<InvVolume>
 
 export interface RamActivity {
-    activityID: number
-    activityName: string
-    description: string
-    iconNo: number | "None"
-    published: number
+  activityID: number
+  activityName: string
+  description: string
+  iconNo: number | 'None'
+  published: number
 }
 export type RamActivityDocument = WithId<RamActivity>
 
 export interface RamAssemblyLineStation {
-    assemblyLineTypeID: number
-    ownerID: number
-    quantity: number
-    regionID: number
-    solarSystemID: number
-    stationID: number
-    stationTypeID: number
+  assemblyLineTypeID: number
+  ownerID: number
+  quantity: number
+  regionID: number
+  solarSystemID: number
+  stationID: number
+  stationTypeID: number
 }
 export type RamAssemblyLineStationDocument = WithId<RamAssemblyLineStation>
 
 export interface RamAssemblyLineType {
-    activityID: number
-    assemblyLineTypeID: number
-    assemblyLineTypeName: string
-    baseCostMultiplier: number
-    baseMaterialMultiplier: number
-    baseTimeMultiplier: number
-    description: string
-    minCostPerHour: number | "None"
-    volume: number
+  activityID: number
+  assemblyLineTypeID: number
+  assemblyLineTypeName: string
+  baseCostMultiplier: number
+  baseMaterialMultiplier: number
+  baseTimeMultiplier: number
+  description: string
+  minCostPerHour: number | 'None'
+  volume: number
 }
 export type RamAssemblyLineTypeDocument = WithId<RamAssemblyLineType>
 
 export interface ManufacturingBatchType {
-    name?: string;                     // Optional name (e.g. "July Rigs Run")
-    createdAt: Date;                   // When this batch was created
-    inputTotal: number;                // Raw materials cost
-    taxTotal: number;                  // Total taxes paid
-    usageTotal: number;                // Facility fees, etc.
-    productLogIds: ObjectId[];         // References to ProductLog._id
-    notes?: string;                    // Optional notes
+  name?: string // Optional name (e.g. "July Rigs Run")
+  createdAt: Date // When this batch was created
+  inputTotal: number // Raw materials cost
+  taxTotal: number // Total taxes paid
+  usageTotal: number // Facility fees, etc.
+  productLogIds: ObjectId[] // References to ProductLog._id
+  notes?: string // Optional notes
 }
-export type ManufacturingBatchTypeDocument = WithId<ManufacturingBatchType>;
-export type ManufacturingBatchTypeInsert = OptionalUnlessRequiredId<ManufacturingBatchType>;
+export type ManufacturingBatchTypeDocument = WithId<ManufacturingBatchType>
+export type ManufacturingBatchTypeInsert =
+  OptionalUnlessRequiredId<ManufacturingBatchType>
 
 interface ProductLogType {
-    typeID: number;          // FK to invTypes.typeID
-    batchID: ObjectId;       // FK to ManufacturingBatch._id
-    createdAt: Date;         // When this log entry was created
-    quantity: number;        // Quantity produced in this log
-    unitCost: number;        // Per-unit manufacturing cost
-    totalCost: number;       // unitCost * quantity (for redundancy / aggregation)
-    notes?: string;          // Optional notes for the entry
+  typeID: number // FK to invTypes.typeID
+  batchID: ObjectId // FK to ManufacturingBatch._id
+  createdAt: Date // When this log entry was created
+  quantity: number // Quantity produced in this log
+  unitCost: number // Per-unit manufacturing cost
+  totalCost: number // unitCost * quantity (for redundancy / aggregation)
+  notes?: string // Optional notes for the entry
 }
 
-export type ProductLogTypeDocument = WithId<ProductLogType>;
-export type ProductLogTypeInsert = OptionalUnlessRequiredId<ProductLogType>;
-
+export type ProductLogTypeDocument = WithId<ProductLogType>
+export type ProductLogTypeInsert = OptionalUnlessRequiredId<ProductLogType>
 
 export interface ManufacturingBatchType {
-    name?: string;                     // Optional name (e.g. "July Rigs Run")
-    createdAt: Date;                   // When this batch was created
-    inputTotal: number;                // Raw materials cost
-    taxTotal: number;                  // Total taxes paid
-    usageTotal: number;                // Facility fees, etc.
-    productLogIds: ObjectId[];         // References to ProductLog._id
-    notes?: string;                    // Optional notes
+  name?: string // Optional name (e.g. "July Rigs Run")
+  createdAt: Date // When this batch was created
+  inputTotal: number // Raw materials cost
+  taxTotal: number // Total taxes paid
+  usageTotal: number // Facility fees, etc.
+  productLogIds: ObjectId[] // References to ProductLog._id
+  notes?: string // Optional notes
 }
 
-export type ManufacturingBatchTypeDocument = WithId<ManufacturingBatchType>;
-export type ManufacturingBatchTypeInsert = OptionalUnlessRequiredId<ManufacturingBatchType>;
-
+export type ManufacturingBatchTypeDocument = WithId<ManufacturingBatchType>
+export type ManufacturingBatchTypeInsert =
+  OptionalUnlessRequiredId<ManufacturingBatchType>
 
 export interface ProductLogType {
-    typeID: number;          // FK to invTypes.typeID
-    batchID: ObjectId;       // FK to ManufacturingBatch._id
-    createdAt: Date;         // When this log entry was created
-    quantity: number;        // Quantity produced in this log
-    unitCost: number;       // Per-unit manufacturing cost
-    totalCost: number;       // unitCost * quantity (redundant but useful)
-    notes?: string;          // Optional notes
+  typeID: number // FK to invTypes.typeID
+  batchID: ObjectId // FK to ManufacturingBatch._id
+  createdAt: Date // When this log entry was created
+  quantity: number // Quantity produced in this log
+  unitCost: number // Per-unit manufacturing cost
+  totalCost: number // unitCost * quantity (redundant but useful)
+  notes?: string // Optional notes
 }
 
-export type ProductLogTypeDocument = WithId<ProductLogType>;
-export type ProductLogTypeInsert = OptionalUnlessRequiredId<ProductLogType>;
-
+export type ProductLogTypeDocument = WithId<ProductLogType>
+export type ProductLogTypeInsert = OptionalUnlessRequiredId<ProductLogType>
 
 export interface OrderType {
-    batchID: ObjectId;          // FK to ManufacturingBatch._id
-    orderNumber?: string;       // External or internal order number
-    type: 'purchase' | 'sale';  // Order type
-    status: 'pending' | 'partial' | 'completed' | 'canceled';
-    createdAt: Date;
-    updatedAt?: Date;
-    notes?: string;
+  batchID: ObjectId // FK to ManufacturingBatch._id
+  orderNumber?: string // External or internal order number
+  type: 'purchase' | 'sale' // Order type
+  status: 'pending' | 'partial' | 'completed' | 'canceled'
+  createdAt: Date
+  updatedAt?: Date
+  notes?: string
 }
 
-export type OrderTypeDocument = WithId<OrderType>;
-export type OrderTypeInsert = OptionalUnlessRequiredId<OrderType>;
-
+export type OrderTypeDocument = WithId<OrderType>
+export type OrderTypeInsert = OptionalUnlessRequiredId<OrderType>
 
 export interface OrderTransactionType {
-    orderID: ObjectId;          // FK to Order._id
-    productLogID?: ObjectId;    // Optional FK to ProductLog._id
-    date: Date;
-    itemTypeID?: number;        // FK to invTypes.typeID (optional fallback)
-    quantity?: number;
-    unitPrice?: number;
-    totalPrice: number;
-    notes?: string;
+  orderID: ObjectId // FK to Order._id
+  productLogID?: ObjectId // Optional FK to ProductLog._id
+  date: Date
+  itemTypeID?: number // FK to invTypes.typeID (optional fallback)
+  quantity?: number
+  unitPrice?: number
+  totalPrice: number
+  notes?: string
 }
 
-export type OrderTransactionTypeDocument = WithId<OrderTransactionType>;
-export type OrderTransactionTypeInsert = OptionalUnlessRequiredId<OrderTransactionType>;
+export type OrderTransactionTypeDocument = WithId<OrderTransactionType>
+export type OrderTransactionTypeInsert =
+  OptionalUnlessRequiredId<OrderTransactionType>
 
 type GenericObject = {
-    id: string;
-    name: string;
+  id: string
+  name: string
 }
 
 type PriceComparisonType = {
-    title: string;
-    items: GenericObject[];
-    source: GenericObject;
-    target: GenericObject;
-    id?: string;
+  title: string
+  items: GenericObject[]
+  source: GenericObject
+  target: GenericObject
+  id?: string
 }
 
 type UserSettings = {
-    structures?: GenericObject[];
-    priceComparisons?: PriceComparisonType[];
+  structures?: GenericObject[]
+  priceComparisons?: PriceComparisonType[]
 }
 
 export type User = {
-    access_token: string;
-    refresh_token: string;
-    expiration: number;
-    name: string;
-    playerId: number;
-    parentPlayerId?: number;
-    settings?: UserSettings;
+  access_token: string
+  refresh_token: string
+  expiration: number
+  name: string
+  playerId: number
+  parentPlayerId?: number
+  settings?: UserSettings
 }
 
-export type UserDocument = WithID<User>;
-export type UserInsert = OptionalUnlessRequiredId<User>;
+export type UserDocument = WithID<User>
+export type UserInsert = OptionalUnlessRequiredId<User>
 
 export type OrderStats = {
-    weightedAverage: string;
-    max: string;
-    min: string;
-    stddev: string;
-    median: string;
-    volume: string;
-    orderCount: string;
-    percentile: string;
-};
-
-export type MarketCache = {
-    typeId: number;
-    structureId: string;
-    buy: OrderStats;
-    sell: OrderStats;
+  weightedAverage: string
+  max: string
+  min: string
+  stddev: string
+  median: string
+  volume: string
+  orderCount: string
+  percentile: string
 }
 
-export type MarketCacheDocument = WithID<MarketCache>;
-export type MarketCacheInsert = OptionalUnlessRequiredId<MarketCache>;
+export type MarketCache = {
+  typeId: number
+  structureId: string
+  buy: OrderStats
+  sell: OrderStats
+}
+
+export type MarketCacheDocument = WithID<MarketCache>
+export type MarketCacheInsert = OptionalUnlessRequiredId<MarketCache>

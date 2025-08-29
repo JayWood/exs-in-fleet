@@ -1,70 +1,70 @@
-import {NextRequest, NextResponse} from "next/server";
-import {Client} from "@/lib/esi/Client";
+import { NextRequest, NextResponse } from 'next/server'
+import { Client } from '@/lib/esi/Client'
 
 interface RouteConfig {
-  pattern: RegExp;
-  handler: (client: Client, match: RegExpMatchArray) => Promise<any>;
-  methods: ('GET' | 'POST' | 'PUT' | 'DELETE')[];
+  pattern: RegExp
+  handler: (client: Client, match: RegExpMatchArray) => Promise<any>
+  methods: ('GET' | 'POST' | 'PUT' | 'DELETE')[]
 }
 
 export class Router {
-  private readonly client: Client;
+  private readonly client: Client
 
   constructor(request: NextRequest) {
-    this.client = new Client(request);
+    this.client = new Client(request)
   }
 
   private routes: RouteConfig[] = [
     {
       pattern: /^corporations\/(\d+)\/wallets$/,
       handler: async (client, match) => {
-        return client.wallet(match[1], 'wallets');
+        return client.wallet(match[1], 'wallets')
       },
-      methods: ['GET'],
+      methods: ['GET']
     },
     {
       pattern: /^corporations\/(\d+)\/wallets\/(\d+)\/journal$/,
       handler: async (client, match) => {
-        return client.wallet(match[1], 'wallets', match[2], 'journal');
+        return client.wallet(match[1], 'wallets', match[2], 'journal')
       },
-      methods: ['GET'],
+      methods: ['GET']
     },
     {
       pattern: /^corporations\/(\d+)\/wallets\/(\d+)\/transactions$/,
       handler: async (client, match) => {
-        return client.wallet(match[1], 'wallets', match[2], 'transactions');
+        return client.wallet(match[1], 'wallets', match[2], 'transactions')
       },
-      methods: ['GET'],
+      methods: ['GET']
     },
     {
       pattern: /^markets\/structures\/(\d+)$/,
       handler: async (client, match) => {
-        return client.markets('structures', match[1]);
+        return client.markets('structures', match[1])
       },
-      methods: ['GET'],
+      methods: ['GET']
     },
     {
       pattern: /^markets\/structures\/(\d+)\/aggregate$/,
       handler: async (client, match) => {
-        return client.getAggregatedMarketStats( 'structures', match[1] );
+        return client.getAggregatedMarketStats('structures', match[1])
       },
-      methods: ['GET'],
+      methods: ['GET']
     }
-  ];
+  ]
 
-  async dispatch(path: string, method: string ) {
+  async dispatch(path: string, method: string) {
     for (const route of this.routes) {
-      const match = path.match(route.pattern);
+      const match = path.match(route.pattern)
       if (match && route.methods.includes(method as any)) {
-        return await route.handler(this.client, match);
+        return await route.handler(this.client, match)
       }
     }
 
-    throw new Error(`No route found for ${method} ${path}`);
+    throw new Error(`No route found for ${method} ${path}`)
   }
 
   // Expose the client for direct usage if needed
   getClient(): Client {
-    return this.client;
+    return this.client
   }
 }

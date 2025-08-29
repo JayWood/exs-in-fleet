@@ -4,7 +4,7 @@ services:
     container_name: mongodb
     restart: on-failure
     ports:
-      - "27017:27017"  # Exposes MongoDB on localhost
+      - '27017:27017' # Exposes MongoDB on localhost
     volumes:
       - mongo-data:/data/db
       - ./csvFiles:/tmp/csvFiles
