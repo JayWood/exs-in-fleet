@@ -9,20 +9,11 @@ import SectionTools from '@/components/client/SectionTools'
 
 const Page = async () => {
   const groups = await getMarketGroupTree()
-  const cookieStore = await cookies()
-  const characterCookie = cookieStore.get('character')?.value
-  const [, playerId] = characterCookie?.split('|') ?? []
 
-  const { settings } = await readOne<UserDocument>(
-    'eveUsers',
-    { playerId: parseInt(playerId) },
-    createProjection(['settings'])
-  )
   return (
     <>
       {/*<MarketTree nodes={groups}/>*/}
       <SectionTools />
-      <SectionPriceComparison settings={settings} />
     </>
   )
 }
