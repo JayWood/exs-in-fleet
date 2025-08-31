@@ -178,8 +178,8 @@ const PriceComparison = ({
                           <td className="flex">
                             <Chevron
                               median={0}
-                              buffer={10}
-                              maxBuffer={20}
+                              buffer={18}
+                              maxBuffer={30}
                               value={calculation}
                             >
                               {calculation}%
