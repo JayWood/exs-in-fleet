@@ -49,6 +49,13 @@ export class Router {
         return client.getAggregatedMarketStats('structures', match[1])
       },
       methods: ['GET']
+    },
+    {
+      pattern: /^markets\/stations\/(jita|rens|amarr|hek)\/aggregate$/,
+      handler: async (client, match) => {
+        return client.getAggregatedMarketStats('tradeStation', match[1])
+      },
+      methods: ['GET']
     }
   ]
 
