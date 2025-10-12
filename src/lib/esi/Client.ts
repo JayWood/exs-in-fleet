@@ -4,7 +4,11 @@ import {
   CorporationWalletTransaction
 } from '@/types/esi/Wallet'
 import { NextRequest, NextResponse } from 'next/server'
-import { MarketOrder } from '@/types/esi/Markets'
+import {
+  CorporationMarketOrder,
+  HistoricalCorporationMarketOrder,
+  MarketOrder
+} from '@/types/esi/Markets'
 import {
   AggregatedOrders,
   groupAndAggregate,
@@ -76,24 +80,44 @@ export class Client {
     })
   }
 
+  corporationOrders(
+    corpId: string,
+    endpoint: 'orders'
+  ): Promise<NextResponse<CorporationMarketOrder[]>>
+  corporationOrders(
+    corpId: string,
+    endpoint: 'orders/history'
+  ): Promise<NextResponse<HistoricalCorporationMarketOrder[]>>
+  corporationOrders(
+    corpId: string,
+    endpoint: string
+  ): Promise<
+    NextResponse<CorporationMarketOrder[] | HistoricalCorporationMarketOrder[]>
+  > {
+    let path = `/corporations/${corpId}/${endpoint}`
+    return this.authRequest<
+      CorporationMarketOrder[] | HistoricalCorporationMarketOrder[]
+    >(path)
+  }
+
   // Corporation overloads
-  wallet(
+  corporationWallets(
     corpId: string,
     endpoint: 'wallets'
   ): Promise<NextResponse<CorporationWallet[]>>
-  wallet(
+  corporationWallets(
     corpId: string,
     endpoint: 'wallets',
     division: string,
     type: 'journal'
   ): Promise<NextResponse<CorporationWalletJournalEntry[]>>
-  wallet(
+  corporationWallets(
     corpId: string,
     endpoint: 'wallets',
     division: string,
     type: 'transactions'
   ): Promise<NextResponse<CorporationWalletTransaction[]>>
-  async wallet(
+  async corporationWallets(
     corpId: string,
     endpoint?: string,
     division?: string,

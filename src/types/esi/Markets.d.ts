@@ -19,7 +19,7 @@ export interface MarketOrder {
   /** True if this is a buy order, false if it's a sell order */
   is_buy_order: boolean
 
-  /** ISO 8601 timestamp of when the order was issued */
+  /** ISO 8601 timestamp of when the order was issued, in UTC time. */
   issued: string
 
   /** Location ID where the order is listed */
@@ -40,9 +40,25 @@ export interface MarketOrder {
   /** Type ID of the item being traded */
   type_id: number
 
+  /** The region ID of the order **/
+  region_id: number
+
   /** Remaining volume available on the order */
   volume_remain: number
 
   /** Total original volume listed in the order */
   volume_total: number
+}
+
+export interface HistoricalMarketOrder extends MarketOrder {
+  state?: 'cancelled' | 'expired'
+}
+
+export interface CorporationMarketOrder extends MarketOrder {
+  wallet_division: number
+}
+
+export interface HistoricalCorporationMarketOrder
+  extends CorporationMarketOrder {
+  state?: 'cancelled' | 'expired'
 }

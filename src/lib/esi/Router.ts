@@ -16,23 +16,47 @@ export class Router {
 
   private routes: RouteConfig[] = [
     {
+      pattern: /^corporations\/(\d+)\/orders$/,
+      handler: async (client, match) => {
+        return client.corporationOrders(match[1], 'orders')
+      },
+      methods: ['GET']
+    },
+    {
+      pattern: /^corporations\/(\d+)\/orders\/history$/,
+      handler: async (client, match) => {
+        return client.corporationOrders(match[1], 'orders/history')
+      },
+      methods: ['GET']
+    },
+    {
       pattern: /^corporations\/(\d+)\/wallets$/,
       handler: async (client, match) => {
-        return client.wallet(match[1], 'wallets')
+        return client.corporationWallets(match[1], 'wallets')
       },
       methods: ['GET']
     },
     {
       pattern: /^corporations\/(\d+)\/wallets\/(\d+)\/journal$/,
       handler: async (client, match) => {
-        return client.wallet(match[1], 'wallets', match[2], 'journal')
+        return client.corporationWallets(
+          match[1],
+          'wallets',
+          match[2],
+          'journal'
+        )
       },
       methods: ['GET']
     },
     {
       pattern: /^corporations\/(\d+)\/wallets\/(\d+)\/transactions$/,
       handler: async (client, match) => {
-        return client.wallet(match[1], 'wallets', match[2], 'transactions')
+        return client.corporationWallets(
+          match[1],
+          'wallets',
+          match[2],
+          'transactions'
+        )
       },
       methods: ['GET']
     },
