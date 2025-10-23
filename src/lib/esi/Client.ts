@@ -23,6 +23,7 @@ import {
 } from '@/lib/db/collections'
 import { refreshToken } from '@/lib/authEveOnline'
 import { readOne } from '@/lib/db/mongoHelpers'
+import { tradeStations } from '@/lib/shared'
 
 export class Client {
   private baseUrl: string = 'https://esi.evetech.net/latest'
@@ -200,27 +201,45 @@ export class Client {
     return nextResponse
   }
 
+  /**
+   * Recursively fetch all market orders for a given structure.
+   *
+   * @param endpoint
+   * @param structure
+   * @param page
+   * @param allOrders
+   * @private
+   */
   private async fetchAllMarketOrders(
     endpoint: string,
-    structureId: string,
+    structure: string,
     page = 1,
     allOrders: MarketOrder[] = []
   ): Promise<MarketOrder[]> {
-    const res = await this.markets('structures', structureId + `/?page=${page}`)
+    let res: NextResponse<MarketOrder[]>
+
+    if (endpoint === 'tradeStation' && structure in tradeStations) {
+      res = await this.authRequest<MarketOrder[]>(
+        `/markets/${tradeStations[structure].region_id}/orders?page=${page}`
+      )
+    } else {
+      res = await this.markets('structures', structure + `/?page=${page}`)
+    }
+
     const data = (await res.json()) as MarketOrder[]
 
-    console.info(`Fetching market orders - Page ${page}`)
-
     const totalPages = parseInt(res.headers.get('x-pages') || '1')
-    const combined = [...allOrders, ...data]
+    console.info(`Fetching market orders - Page ${page}/${totalPages}...`)
+    const combined = [
+      ...allOrders,
+      ...data.filter(
+        i => i.location_id === tradeStations[structure].location_id
+      )
+    ]
+    console.info(`Fetched ${combined.length} orders`)
 
     if (page < totalPages) {
-      return this.fetchAllMarketOrders(
-        endpoint,
-        structureId,
-        page + 1,
-        combined
-      )
+      return this.fetchAllMarketOrders(endpoint, structure, page + 1, combined)
     } else {
       return combined
     }
@@ -241,7 +260,7 @@ export class Client {
         ...(stats as AggregatedOrders[number]),
         typeId: parseInt(typeId),
         createdAt: new Date(),
-        structureId: parseInt(structureId)
+        structureId: structureId
       }))
 
       await marketCacheSet(documents)

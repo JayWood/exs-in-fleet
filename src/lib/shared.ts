@@ -112,3 +112,29 @@ export function parseMarketOrderPaste(
       }
     })
 }
+
+export const tradeStations: Record<
+  string,
+  { location_id: number; region_id: number }
+> = {
+  jita: {
+    location_id: 60003760,
+    region_id: 10000002
+  },
+  rens: {
+    location_id: 60004588,
+    region_id: 10000030
+  },
+  amarr: {
+    location_id: 60008494,
+    region_id: 10000043
+  },
+  hek: {
+    location_id: 60005686,
+    region_id: 10000042
+  },
+  dodixie: {
+    location_id: 60011866,
+    region_id: 10000032
+  }
+}

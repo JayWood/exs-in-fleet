@@ -75,7 +75,7 @@ export class Router {
       methods: ['GET']
     },
     {
-      pattern: /^markets\/stations\/(jita|rens|amarr|hek)\/aggregate$/,
+      pattern: /^markets\/station\/(jita|rens|amarr|hek|dodixie)\/aggregate$/,
       handler: async (client, match) => {
         return client.getAggregatedMarketStats('tradeStation', match[1])
       },
