@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Client } from '@/lib/esi/Client'
+import { Client } from '@/lib/esiProxy/Client'
 
 interface RouteConfig {
   pattern: RegExp
@@ -92,10 +92,5 @@ export class Router {
     }
 
     throw new Error(`No route found for ${method} ${path}`)
-  }
-
-  // Expose the client for direct usage if needed
-  getClient(): Client {
-    return this.client
   }
 }

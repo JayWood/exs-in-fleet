@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Client } from '@/lib/esi/Client'
 import { PriceData } from '@/components/client/PriceComparison/PriceComparison'
 import { fuzzworkStructures, getFuzzworksData } from '@/app/api/fuzzworks/route'
 import { createProjection, readMany, readOne } from '@/lib/db/mongoHelpers'
-import { json } from 'node:stream/consumers'
-import { AggregatedOrders, groupAndAggregate } from '@/lib/market'
+import { AggregatedOrders } from '@/lib/market'
 import {
   InvTypeDocument,
   MarketCache,

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Router } from '@/lib/esi/Router'
+import { Router } from '@/lib/esiProxy/Router'
 
 export async function GET(
   request: NextRequest,
