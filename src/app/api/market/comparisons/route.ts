@@ -129,9 +129,10 @@ const getStructureAggregatedOrders = async (
   }
 
   const rows = await readMany('marketCache', {
-    structureId: structureId,
+    structureId: structureId.toString(),
     typeId: { $in: typeIds }
   })
+
   return rows.reduce((acc, row) => {
     const { typeId, buy, sell, structureId } = row as MarketCacheDocument
     acc[typeId] = { buy, sell, structureId }

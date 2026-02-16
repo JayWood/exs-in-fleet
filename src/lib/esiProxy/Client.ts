@@ -227,13 +227,27 @@ export class Client {
     }
 
     const data = (await res.json()) as MarketOrder[]
-
     const totalPages = parseInt(res.headers.get('x-pages') || '1')
+    // log pages and rate limits
     console.info(`Fetching market orders - Page ${page}/${totalPages}...`)
+    console.info(`Rate limit group: ${res.headers.get('x-ratelimit-group')}`)
+    console.info(`Rate limit: ${res.headers.get('x-ratelimit-limit')}`)
+    console.info(
+      `Rate limit remaining: ${res.headers.get('x-ratelimit-remaining')}`
+    )
+    console.info(`Rate limit used: ${res.headers.get('x-ratelimit-used')}`)
+    if (res.status === 429) {
+      console.warn(
+        `Rate limited - retry after ${res.headers.get('retry-after')} seconds`
+      )
+    }
+
     const combined = [
       ...allOrders,
-      ...data.filter(
-        i => i.location_id === tradeStations[structure].location_id
+      ...data.filter(i =>
+        endpoint !== 'tradeStation'
+          ? true
+          : i.location_id === tradeStations[structure].location_id
       )
     ]
     console.info(`Fetched ${combined.length} orders`)
@@ -260,7 +274,7 @@ export class Client {
         ...(stats as AggregatedOrders[number]),
         typeId: parseInt(typeId),
         createdAt: new Date(),
-        structureId: structureId
+        structureId: structureId.toString()
       }))
 
       await marketCacheSet(documents)
