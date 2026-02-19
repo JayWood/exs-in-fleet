@@ -42,3 +42,19 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     { status: 400 }
   )
 }
+
+export async function POST(request: NextRequest) {
+  const { action, items } = await request.json()
+
+  if (action === 'itemSearch' && Array.isArray(items)) {
+    const filter: Filter<InvType> = {
+      typeName: { $in: items }
+    }
+    return NextResponse.json(await readMany('invTypes', filter))
+  }
+
+  return NextResponse.json(
+    { error: 'POST requests must include an action array' },
+    { status: 400 }
+  )
+}

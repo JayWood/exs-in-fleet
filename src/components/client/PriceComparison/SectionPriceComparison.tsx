@@ -18,7 +18,6 @@ export default function SectionPriceComparison({
   const [priceComparisons, setPriceComparisons] = useState<
     PriceComparisonType[]
   >([])
-  const [editMode, setEditMode] = useState(false)
   useEffect(() => {
     if (settings?.priceComparisons) {
       setPriceComparisons(settings?.priceComparisons)
@@ -74,16 +73,6 @@ export default function SectionPriceComparison({
                 >
                   Add New
                 </a>
-                <a
-                  href="#"
-                  className="w-full"
-                  onClick={e => {
-                    e.preventDefault()
-                    setEditMode(!editMode)
-                  }}
-                >
-                  {!editMode ? 'Edit Mode' : 'View Mode'}
-                </a>
               </li>
             </ul>
           </div>
@@ -95,7 +84,6 @@ export default function SectionPriceComparison({
             <PriceComparison
               key={`${index}-${id}`}
               value={comparison}
-              editMode={editMode}
               onDelete={() => {
                 const newComparisons = priceComparisons.filter(
                   (c, i) => i !== index

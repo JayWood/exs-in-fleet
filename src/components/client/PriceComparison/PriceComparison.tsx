@@ -50,7 +50,7 @@ const PriceComparison = ({
   value,
   onUpdate,
   onDelete,
-  editMode
+  editMode = false
 }: PriceComparisonProps) => {
   const defaultSettings = {
     title: '',
@@ -98,23 +98,21 @@ const PriceComparison = ({
   return (
     <div className="card card-border bg-base-100 card-md shadow-sm">
       <div className="card-body">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center group">
           <div className="card-title">{componentState.title}</div>
-          {editMode && (
-            <div>
-              <button className="btn btn-link mb-2 px-0" onClick={onDelete}>
-                <TrashIcon className="w-4 h-4  text-gray-500 hover:text-gray-800" />
-              </button>
-              <button
-                className="btn btn-link mb-2"
-                onClick={() => {
-                  setshowEditingForm(!showEditingForm)
-                }}
-              >
-                <PencilSquareIcon className="w-4 h-4 mr-1  text-gray-500 hover:text-gray-800" />
-              </button>
-            </div>
-          )}
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+            <button className="btn btn-link mb-2 px-0" onClick={onDelete}>
+              <TrashIcon className="w-4 h-4  text-gray-500 hover:text-gray-800" />
+            </button>
+            <button
+              className="btn btn-link mb-2"
+              onClick={() => {
+                setshowEditingForm(!showEditingForm)
+              }}
+            >
+              <PencilSquareIcon className="w-4 h-4 mr-1  text-gray-500 hover:text-gray-800" />
+            </button>
+          </div>
         </div>
         <div className="overflow-x-auto">
           {showEditingForm && (
