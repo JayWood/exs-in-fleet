@@ -3,7 +3,7 @@ import { readOne } from '@/lib/db/mongoHelpers'
 import { UserDocument } from '@/lib/db/collections'
 import { refreshToken } from '@/lib/authEveOnline'
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname
   const characterCookie = request.cookies.get('character')?.value
 
