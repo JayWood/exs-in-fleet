@@ -13,42 +13,40 @@ import {
 } from '@/lib/db/collections'
 
 interface PriceComparisonFormProps {
-  onChange: (data: PriceComparisonType) => void
-  onSubmit: () => void
+  onChange?: (data: PriceComparisonType) => void
+  onSubmit: (data: PriceComparisonType) => void
   value: PriceComparisonType
 }
 
-const PriceComparisonForm = ({
-  onChange,
-  value,
-  onSubmit
-}: PriceComparisonFormProps) => {
-  const [searchResults, setSearchResults] = useState<GenericObject[]>([])
-  const [searchQuery, setSearchQuery] = useState('')
-  const [isSearching, setIsSearching] = useState(false)
-  const [searchType, setSearchType] = useState<string>('string')
-  const timeoutId = useRef<NodeJS.Timeout | null>(null)
-
-  const searchItems = async (query: string) => {
-    setSearchType('string')
-    setIsSearching(true)
-    await axios.get(`/api/eve/sde/invTypes?s=${query}`).then(res => {
-      setSearchResults(
-        res.data.map((item?: InvTypeDocument) => ({
-          typeId: item?.typeID,
-          name: item?.typeName
-        }))
-      )
-      setIsSearching(false)
-    })
-  }
+const PriceComparisonForm = ({ value, onSubmit }: PriceComparisonFormProps) => {
+  const [formState, setFormState] = useState<any>({ ...value })
+  const [processing, setProcessing] = useState(false)
+  const [itemNames, setItemNames] = useState<string>(
+    value?.items?.map(item => item.name).join('\n') || ''
+  )
 
   return (
     <div className="w-full max-w-2xl mx-auto p-4">
       <form
         onSubmit={e => {
+          setProcessing(true)
           e.preventDefault()
-          onSubmit()
+          const items = itemNames.split('\n').map(name => name.trim())
+          axios
+            .post('/api/eve/sde/invTypes', { action: 'itemSearch', items })
+            .then((res: { status: number; data: InvTypeDocument[] }) => {
+              if (res.status != 200) {
+                return
+              }
+
+              setProcessing(false)
+              onSubmit({
+                ...formState,
+                items: res.data.map(({ typeName, typeID }) => {
+                  return { name: typeName, typeId: typeID }
+                })
+              })
+            })
         }}
         className="space-y-4"
       >
@@ -60,7 +58,9 @@ const PriceComparisonForm = ({
             type="text"
             name="title"
             value={value?.title || ''}
-            onChange={e => onChange({ ...value, title: e.target.value })}
+            onChange={e =>
+              setFormState({ ...formState, title: e.target.value })
+            }
             className="input input-bordered"
             placeholder="Enter title"
           />
@@ -77,9 +77,9 @@ const PriceComparisonForm = ({
               name="sourceStructureName"
               value={value?.source?.name || ''}
               onChange={e =>
-                onChange({
-                  ...value,
-                  source: { ...value.source, name: e.target.value }
+                setFormState({
+                  ...formState,
+                  source: { ...formState.source, name: e.target.value }
                 })
               }
               className="input input-bordered"
@@ -96,9 +96,9 @@ const PriceComparisonForm = ({
               name="sourceStructureId"
               value={value?.source?.id || ''}
               onChange={e =>
-                onChange({
-                  ...value,
-                  source: { ...value.source, id: e.target.value }
+                setFormState({
+                  ...formState,
+                  source: { ...formState.source, id: e.target.value }
                 })
               }
               className="input input-bordered"
@@ -118,9 +118,9 @@ const PriceComparisonForm = ({
               name="targetStructureName"
               value={value?.target?.name || ''}
               onChange={e =>
-                onChange({
-                  ...value,
-                  target: { ...value.target, name: e.target.value }
+                setFormState({
+                  ...formState,
+                  target: { ...formState.target, name: e.target.value }
                 })
               }
               className="input input-bordered"
@@ -137,9 +137,9 @@ const PriceComparisonForm = ({
               name="targetStructureId"
               value={value?.target?.id || ''}
               onChange={e =>
-                onChange({
-                  ...value,
-                  target: { ...value.target, id: e.target.value }
+                setFormState({
+                  ...formState,
+                  target: { ...formState.target, id: e.target.value }
                 })
               }
               className="input input-bordered"
@@ -153,124 +153,18 @@ const PriceComparisonForm = ({
           <label className="label block">
             <span className="label-text">Items</span>
           </label>
-          <div className="flex gap-2">
-            <label className="input grow">
-              <MagnifyingGlassCircleIcon className="w-4 h-4" />
-              <input
-                type="search"
-                className="grow"
-                placeholder="Search - or use type IDs, separated by comma/space: ie. 1,2,3,4,5"
-                list="searchResults"
-                value={searchQuery}
-                onChange={evt => {
-                  const searchQuery = evt.target.value
-                  if (timeoutId.current) {
-                    clearTimeout(timeoutId.current)
-                  }
-
-                  setSearchQuery(searchQuery)
-                  const isTypeIdList = /^\d+(?:[,\s]\d+)*$/.test(searchQuery)
-                  if (isTypeIdList) {
-                    setIsSearching(true)
-                    setSearchType('typeId')
-                    const separator = searchQuery.includes(',') ? ',' : ' '
-                    const typeIds = searchQuery
-                      .split(separator)
-                      .map(id => parseInt(id.trim()))
-                    axios
-                      .get(`/api/eve/sde/invTypes?typeIds=${typeIds.join(',')}`)
-                      .then(res => {
-                        setIsSearching(false)
-                        const r = res.data.map((item?: InvTypeDocument) => ({
-                          typeId: item?.typeID,
-                          name: item?.typeName
-                        }))
-                        setSearchResults(r)
-                      })
-                    return
-                  }
-
-                  if (searchQuery.length < 3 || isTypeIdList) {
-                    return
-                  }
-
-                  if (
-                    searchResults.some(item =>
-                      item.name
-                        .toLowerCase()
-                        .includes(searchQuery.toLowerCase())
-                    )
-                  ) {
-                    return
-                  }
-
-                  timeoutId.current = setTimeout(() => {
-                    searchItems(evt.target.value)
-                  }, 500)
-                }}
-              />
-              {isSearching && (
-                <span className="loading loading-dots loading-xs"></span>
-              )}
-              <datalist id="searchResults">
-                {searchResults?.map((item, index) => (
-                  <option key={index} value={item.name}></option>
-                ))}
-              </datalist>
-            </label>
-            <button
-              type="button"
-              className="btn btn-primary"
-              disabled={
-                searchQuery.length === 0 ||
-                isSearching ||
-                (!searchResults.some(item =>
-                  item.name.toLowerCase().includes(searchQuery.toLowerCase())
-                ) &&
-                  searchType === 'string')
-              }
-              onClick={() => {
-                if (searchType === 'typeId') {
-                  onChange({
-                    ...value,
-                    items: [...value?.items, ...searchResults]
-                  })
-                  setSearchQuery('')
-                  return
-                }
-
-                const result = searchResults.find(item =>
-                  item.name.toLowerCase().includes(searchQuery.toLowerCase())
-                )
-                if (result) {
-                  onChange({ ...value, items: [...value?.items, result] })
-                }
-                setSearchQuery('')
+          <div className="w-full">
+            <textarea
+              className="textarea w-full"
+              value={itemNames}
+              onChange={e => {
+                setItemNames(e.target.value)
+                // const items = e.target.value
+                //   .split('\n')
+                //   .map(name => ({ name: name.trim() }))
+                // setFormState({ ...formState, searchItems: items })
               }}
-            >
-              Add
-            </button>
-          </div>
-
-          {/* Items List */}
-          <div className="mt-2">
-            {value?.items?.map((item, index) => (
-              <div key={index} className="flex items-center gap-2 mt-2">
-                <span className="flex-grow">{item.name}</span>
-                <button
-                  type="button"
-                  className="btn btn-error btn-sm"
-                  onClick={() => {
-                    onChange({
-                      ...value,
-                      items: value.items.filter((_, i) => i !== index)
-                    })
-                  }}
-                >
-                  Remove
-                </button>
-              </div>
-            ))}
+            />
           </div>
         </div>
 

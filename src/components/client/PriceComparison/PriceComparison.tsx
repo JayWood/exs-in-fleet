@@ -119,8 +119,9 @@ const PriceComparison = ({
             <PriceComparisonForm
               value={componentState}
               onChange={(data: PriceComparisonType) => setComponentState(data)}
-              onSubmit={() => {
-                onUpdate(componentState)
+              onSubmit={(newState: PriceComparisonType) => {
+                onUpdate(newState)
+                setComponentState(newState)
                 setshowEditingForm(false)
               }}
             />
@@ -138,55 +139,60 @@ const PriceComparison = ({
                   </tr>
                 </thead>
                 <tbody>
-                  {prices?.map(
-                    (
-                      { source, target, targetStock, item }: PriceData,
-                      index
-                    ) => {
-                      const calculation = calculateDiffPercentage(
-                        target,
-                        source
-                      )
-                      return (
-                        <tr key={index}>
-                          <td>
-                            <Link
-                              className="link"
-                              href={`https://evetycoon.com/market/${item.typeId}`}
-                              target="_blank"
-                            >
-                              {item.name}
-                            </Link>
-                          </td>
-                          <td>
-                            {Math.ceil(source).toLocaleString(undefined, {
-                              maximumFractionDigits: 0
-                            })}
-                          </td>
-                          <td>
-                            {Math.ceil(targetStock).toLocaleString(undefined, {
-                              maximumFractionDigits: 0
-                            })}
-                          </td>
-                          <td>
-                            {Math.ceil(target).toLocaleString(undefined, {
-                              maximumFractionDigits: 0
-                            })}
-                          </td>
-                          <td className="flex">
-                            <Chevron
-                              median={0}
-                              buffer={18}
-                              maxBuffer={30}
-                              value={calculation}
-                            >
-                              {calculation}%
-                            </Chevron>
-                          </td>
-                        </tr>
-                      )
-                    }
-                  )}
+                  {prices
+                    ?.sort((a, b) => a.item.name.localeCompare(b.item.name))
+                    .map(
+                      (
+                        { source, target, targetStock, item }: PriceData,
+                        index
+                      ) => {
+                        const calculation = calculateDiffPercentage(
+                          target,
+                          source
+                        )
+                        return (
+                          <tr key={index}>
+                            <td>
+                              <Link
+                                className="link"
+                                href={`https://evetycoon.com/market/${item.typeId}`}
+                                target="_blank"
+                              >
+                                {item.name}
+                              </Link>
+                            </td>
+                            <td>
+                              {Math.ceil(source).toLocaleString(undefined, {
+                                maximumFractionDigits: 0
+                              })}
+                            </td>
+                            <td>
+                              {Math.ceil(targetStock).toLocaleString(
+                                undefined,
+                                {
+                                  maximumFractionDigits: 0
+                                }
+                              )}
+                            </td>
+                            <td>
+                              {Math.ceil(target).toLocaleString(undefined, {
+                                maximumFractionDigits: 0
+                              })}
+                            </td>
+                            <td className="flex">
+                              <Chevron
+                                median={0}
+                                buffer={18}
+                                maxBuffer={30}
+                                value={calculation}
+                              >
+                                {calculation}%
+                              </Chevron>
+                            </td>
+                          </tr>
+                        )
+                      }
+                    )}
                 </tbody>
               </table>
             </>
