@@ -33,15 +33,19 @@ export default function SectionPriceComparison({
               onClick={async () => {
                 try {
                   const btn = document.activeElement as HTMLButtonElement
-                  btn.classList.add('loading')
-                  btn.classList.add('loading-xs')
-                  await axios.get(
+                  btn.classList.add('loading', 'loading-xs')
+                  const response = await axios.get(
                     '/api/eve/esi/markets/structures/1046664001931/aggregate',
                     {
-                      timeout: 60000
+                      timeout: 120000
                     }
-                  )
-                  window.location.reload()
+                  );
+
+                  if ( ! response.data) {
+                    btn.classList.remove('loading', 'loading-xs');
+                    console.log( 'oops' );
+                    return;
+                  }
                 } catch (err) {
                   console.error(err)
                 }

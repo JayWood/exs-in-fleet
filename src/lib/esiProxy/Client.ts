@@ -166,7 +166,7 @@ export class Client {
    * @param options
    * @private
    */
-  private async request(endpoint: string, options: RequestInit = {}) {
+  private async request(endpoint: string, options: RequestInit = {}, tryCount = 0) {
     const url = new URL(endpoint, this.baseUrl)
     const originalParams = this.nextRequest.nextUrl.searchParams
     originalParams.forEach((value, key) => {
@@ -180,10 +180,18 @@ export class Client {
       },
       ...options
     })
+    
+    // if response status is a gateway timeout, wait a few seconds and try again, up to 3 times
+    if (response.status === 504 && tryCount < 3) {
+      tryCount++
+      console.warn('Gateway timeout, retrying...')
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      return this.request(endpoint, options, tryCount)
+    }
 
     if (!response.ok) {
       throw new Error(
-        `ESI request failed: ${response.status} ${response.statusText}`
+        `ESI request failed: ${response.status} ${response.statusText} with URL: ${url.toString()}`
       )
     }
 
@@ -228,14 +236,11 @@ export class Client {
 
     const data = (await res.json()) as MarketOrder[]
     const totalPages = parseInt(res.headers.get('x-pages') || '1')
-    // log pages and rate limits
-    console.info(`Fetching market orders - Page ${page}/${totalPages}...`)
-    console.info(`Rate limit group: ${res.headers.get('x-ratelimit-group')}`)
-    console.info(`Rate limit: ${res.headers.get('x-ratelimit-limit')}`)
-    console.info(
-      `Rate limit remaining: ${res.headers.get('x-ratelimit-remaining')}`
-    )
-    console.info(`Rate limit used: ${res.headers.get('x-ratelimit-used')}`)
+    // get and log all headers
+    for (const [key, value] of res.headers.entries()) {
+      console.info(`${key}: ${value}`)
+    }
+
     if (res.status === 429) {
       console.warn(
         `Rate limited - retry after ${res.headers.get('retry-after')} seconds`
@@ -253,6 +258,8 @@ export class Client {
     console.info(`Fetched ${combined.length} orders`)
 
     if (page < totalPages) {
+      // wait a few seconds before running again
+      await new Promise(resolve => setTimeout(resolve, 1000))
       return this.fetchAllMarketOrders(endpoint, structure, page + 1, combined)
     } else {
       return combined
