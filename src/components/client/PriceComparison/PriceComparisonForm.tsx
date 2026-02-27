@@ -13,12 +13,12 @@ import {
 } from '@/lib/db/collections'
 
 interface PriceComparisonFormProps {
-  onChange?: (data: PriceComparisonType) => void
+  onChange: (data: PriceComparisonType) => void
   onSubmit: (data: PriceComparisonType) => void
   value: PriceComparisonType
 }
 
-const PriceComparisonForm = ({ value, onSubmit }: PriceComparisonFormProps) => {
+const PriceComparisonForm = ({ value, onSubmit, onChange }: PriceComparisonFormProps) => {
   const [formState, setFormState] = useState<any>({ ...value })
   const [processing, setProcessing] = useState(false)
   const [itemNames, setItemNames] = useState<string>(
@@ -58,9 +58,10 @@ const PriceComparisonForm = ({ value, onSubmit }: PriceComparisonFormProps) => {
             type="text"
             name="title"
             value={value?.title || ''}
-            onChange={e =>
-              setFormState({ ...formState, title: e.target.value })
-            }
+            onChange={e => {
+                onChange({...formState, title: e.target.value})
+                setFormState({...formState, title: e.target.value})
+            } }
             className="input input-bordered"
             placeholder="Enter title"
           />
@@ -76,12 +77,13 @@ const PriceComparisonForm = ({ value, onSubmit }: PriceComparisonFormProps) => {
               type="text"
               name="sourceStructureName"
               value={value?.source?.name || ''}
-              onChange={e =>
+              onChange={e => {
+                onChange({...formState, source: { ...formState.source, name: e.target.value }})
                 setFormState({
                   ...formState,
                   source: { ...formState.source, name: e.target.value }
                 })
-              }
+              } }
               className="input input-bordered"
               placeholder="Enter source structure name"
             />
@@ -95,12 +97,13 @@ const PriceComparisonForm = ({ value, onSubmit }: PriceComparisonFormProps) => {
               type="text"
               name="sourceStructureId"
               value={value?.source?.id || ''}
-              onChange={e =>
-                setFormState({
-                  ...formState,
-                  source: { ...formState.source, id: e.target.value }
-                })
-              }
+              onChange={e =>{
+                  onChange({...formState, source: { ...formState.source, id: e.target.value }})
+                  setFormState({
+                      ...formState,
+                      source: { ...formState.source, id: e.target.value }
+                  })
+              } }
               className="input input-bordered"
               placeholder="Enter source structure ID"
             />
@@ -117,12 +120,13 @@ const PriceComparisonForm = ({ value, onSubmit }: PriceComparisonFormProps) => {
               type="text"
               name="targetStructureName"
               value={value?.target?.name || ''}
-              onChange={e =>
-                setFormState({
-                  ...formState,
-                  target: { ...formState.target, name: e.target.value }
-                })
-              }
+              onChange={e => {
+                  onChange({...formState, target: { ...formState.target, name: e.target.value }})
+                  setFormState({
+                      ...formState,
+                      target: { ...formState.target, name: e.target.value }
+                  })
+              } }
               className="input input-bordered"
               placeholder="Enter target structure name"
             />
@@ -136,12 +140,13 @@ const PriceComparisonForm = ({ value, onSubmit }: PriceComparisonFormProps) => {
               type="text"
               name="targetStructureId"
               value={value?.target?.id || ''}
-              onChange={e =>
-                setFormState({
-                  ...formState,
-                  target: { ...formState.target, id: e.target.value }
-                })
-              }
+              onChange={e => {
+                  onChange({...formState, target: { ...formState.target, id: e.target.value }})
+                  setFormState({
+                      ...formState,
+                      target: { ...formState.target, id: e.target.value }
+                  })
+              } }
               className="input input-bordered"
               placeholder="Enter target structure ID"
             />
