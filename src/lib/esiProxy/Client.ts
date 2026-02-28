@@ -70,7 +70,7 @@ export class Client {
       throw new Error('Not logged in.')
     }
 
-    const [name, playerId] = characterData.split('|')
+    const [, playerId] = characterData.split('|')
     const userDocument = await readOne<UserDocument>('eveUsers', {
       playerId: parseInt(playerId)
     })
@@ -95,7 +95,7 @@ export class Client {
   ): Promise<
     NextResponse<CorporationMarketOrder[] | HistoricalCorporationMarketOrder[]>
   > {
-    let path = `/corporations/${corpId}/${endpoint}`
+    const path = `/corporations/${corpId}/${endpoint}`
     return this.authRequest<
       CorporationMarketOrder[] | HistoricalCorporationMarketOrder[]
     >(path)
@@ -166,7 +166,7 @@ export class Client {
    * @param options
    * @private
    */
-  private async request(endpoint: string, options: RequestInit = {}, tryCount = 0) {
+  private async request(endpoint: string, options: RequestInit = {}, tryCount = 0): Promise<NextResponse<any>> {
     const url = new URL(endpoint, this.baseUrl)
     const originalParams = this.nextRequest.nextUrl.searchParams
     originalParams.forEach((value, key) => {

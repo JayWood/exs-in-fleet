@@ -1,10 +1,10 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import {useRef, useState} from 'react'
 
-import { MagnifyingGlassCircleIcon } from '@heroicons/react/16/solid'
+import {MagnifyingGlassCircleIcon} from '@heroicons/react/16/solid'
 import axios from 'axios'
-import { debounce } from 'next/dist/server/utils'
+import {debounce} from 'next/dist/server/utils'
 import {
   GenericObject,
   InvTypeDocument,
@@ -15,11 +15,12 @@ import {
 interface PriceComparisonFormProps {
   onChange: (data: PriceComparisonType) => void
   onSubmit: (data: PriceComparisonType) => void
+  structures?: GenericObject[]
   value: PriceComparisonType
 }
 
-const PriceComparisonForm = ({ value, onSubmit, onChange }: PriceComparisonFormProps) => {
-  const [formState, setFormState] = useState<any>({ ...value })
+const PriceComparisonForm = ({value, onSubmit, onChange, structures}: PriceComparisonFormProps) => {
+  const [formState, setFormState] = useState<any>({...value})
   const [processing, setProcessing] = useState(false)
   const [itemNames, setItemNames] = useState<string>(
     value?.items?.map(item => item.name).join('\n') || ''
@@ -33,7 +34,7 @@ const PriceComparisonForm = ({ value, onSubmit, onChange }: PriceComparisonFormP
           e.preventDefault()
           const items = itemNames.split('\n').map(name => name.trim())
           axios
-            .post('/api/eve/sde/invTypes', { action: 'itemSearch', items })
+            .post('/api/eve/sde/invTypes', {action: 'itemSearch', items})
             .then((res: { status: number; data: InvTypeDocument[] }) => {
               if (res.status != 200) {
                 return
@@ -42,8 +43,8 @@ const PriceComparisonForm = ({ value, onSubmit, onChange }: PriceComparisonFormP
               setProcessing(false)
               onSubmit({
                 ...formState,
-                items: res.data.map(({ typeName, typeID }) => {
-                  return { name: typeName, typeId: typeID }
+                items: res.data.map(({typeName, typeID}) => {
+                  return {name: typeName, typeId: typeID}
                 })
               })
             })
@@ -59,97 +60,89 @@ const PriceComparisonForm = ({ value, onSubmit, onChange }: PriceComparisonFormP
             name="title"
             value={value?.title || ''}
             onChange={e => {
-                onChange({...formState, title: e.target.value})
-                setFormState({...formState, title: e.target.value})
-            } }
+              onChange({...formState, title: e.target.value})
+              setFormState({...formState, title: e.target.value})
+            }}
             className="input input-bordered"
             placeholder="Enter title"
           />
         </div>
-
-        {/* Source Structure Fields */}
         <div className="grid grid-cols-2 gap-4">
           <div className="form-control">
             <label className="label block">
-              <span className="label-text">Source Structure Name</span>
+              <span className="label-text">Source Structure</span>
             </label>
-            <input
-              type="text"
-              name="sourceStructureName"
-              value={value?.source?.name || ''}
+            <select
+              name="sourceStructure"
+              value={value?.source?.id || ''}
               onChange={e => {
-                onChange({...formState, source: { ...formState.source, name: e.target.value }})
+                const selectedStructure = structures?.find(
+                  structure => structure.id === e.target.value
+                )
+                onChange({
+                  ...formState,
+                  source: {
+                    id: selectedStructure?.id || '',
+                    name: selectedStructure?.name || ''
+                  }
+                })
                 setFormState({
                   ...formState,
-                  source: { ...formState.source, name: e.target.value }
+                  source: {
+                    id: selectedStructure?.id || '',
+                    name: selectedStructure?.name || ''
+                  }
                 })
-              } }
-              className="input input-bordered"
-              placeholder="Enter source structure name"
-            />
+              }}
+              className="select select-bordered"
+            >
+              <option value="" disabled>
+                Select source structure
+              </option>
+              {structures?.map(structure => (
+                <option key={structure.id} value={structure.id}>
+                  {structure.name}
+                </option>
+              ))}
+            </select>
           </div>
-
           <div className="form-control">
             <label className="label block">
-              <span className="label-text">Source Structure ID</span>
+              <span className="label-text">Target Structure</span>
             </label>
-            <input
-              type="text"
-              name="sourceStructureId"
-              value={value?.source?.id || ''}
-              onChange={e =>{
-                  onChange({...formState, source: { ...formState.source, id: e.target.value }})
-                  setFormState({
-                      ...formState,
-                      source: { ...formState.source, id: e.target.value }
-                  })
-              } }
-              className="input input-bordered"
-              placeholder="Enter source structure ID"
-            />
-          </div>
-        </div>
-
-        {/* Target Structure Fields */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="form-control">
-            <label className="label block">
-              <span className="label-text">Target Structure Name</span>
-            </label>
-            <input
-              type="text"
-              name="targetStructureName"
-              value={value?.target?.name || ''}
-              onChange={e => {
-                  onChange({...formState, target: { ...formState.target, name: e.target.value }})
-                  setFormState({
-                      ...formState,
-                      target: { ...formState.target, name: e.target.value }
-                  })
-              } }
-              className="input input-bordered"
-              placeholder="Enter target structure name"
-            />
-          </div>
-
-          <div className="form-control">
-            <label className="label block">
-              <span className="label-text">Target Structure ID</span>
-            </label>
-            <input
-              type="text"
-              name="targetStructureId"
+            <select
+              name="targetStructure"
               value={value?.target?.id || ''}
               onChange={e => {
-                  onChange({...formState, target: { ...formState.target, id: e.target.value }})
-                  setFormState({
-                      ...formState,
-                      target: { ...formState.target, id: e.target.value }
-                  })
-              } }
-              className="input input-bordered"
-              placeholder="Enter target structure ID"
-            />
+                const selectedStructure = structures?.find(
+                  structure => structure.id === e.target.value
+                )
+                onChange({
+                  ...formState,
+                  target: {
+                    id: selectedStructure?.id || '',
+                    name: selectedStructure?.name || ''
+                  }
+                })
+                setFormState({
+                  ...formState,
+                  target: {
+                    id: selectedStructure?.id || '',
+                    name: selectedStructure?.name || ''
+                  }
+                })
+              }}
+              className="select select-bordered"
+            >
+              <option value="" disabled>
+                Select target structure
+              </option>
+              {structures?.map(structure => (
+                <option key={structure.id} value={structure.id}>
+                  {structure.name}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
@@ -164,10 +157,6 @@ const PriceComparisonForm = ({ value, onSubmit, onChange }: PriceComparisonFormP
               value={itemNames}
               onChange={e => {
                 setItemNames(e.target.value)
-                // const items = e.target.value
-                //   .split('\n')
-                //   .map(name => ({ name: name.trim() }))
-                // setFormState({ ...formState, searchItems: items })
               }}
             />
           </div>

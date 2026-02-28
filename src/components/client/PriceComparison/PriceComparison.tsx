@@ -4,7 +4,7 @@ import CardMedium from '@/components/ui/CardMedium'
 import { useEffect, useState } from 'react'
 import PriceComparisonForm from '@/components/client/PriceComparison/PriceComparisonForm'
 import axios from 'axios'
-import { PriceComparisonType, UserSettings } from '@/lib/db/collections'
+import {GenericObject, PriceComparisonType, UserSettings} from '@/lib/db/collections'
 import {
   Cog6ToothIcon,
   PencilSquareIcon,
@@ -43,6 +43,7 @@ interface PriceComparisonProps {
   value: PriceComparisonType
   onUpdate: (value: PriceComparisonType) => void
   onDelete: () => void
+  structures?: GenericObject[]
   editMode?: boolean
 }
 
@@ -50,6 +51,7 @@ const PriceComparison = ({
   value,
   onUpdate,
   onDelete,
+  structures,
   editMode = false
 }: PriceComparisonProps) => {
   const defaultSettings = {
@@ -119,6 +121,7 @@ const PriceComparison = ({
             <PriceComparisonForm
               value={componentState}
               onChange={(data: PriceComparisonType) => setComponentState(data)}
+              structures={structures}
               onSubmit={(newState: PriceComparisonType) => {
                 onUpdate(newState)
                 setComponentState(newState)
