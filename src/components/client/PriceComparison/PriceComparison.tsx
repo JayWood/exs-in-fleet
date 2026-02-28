@@ -153,6 +153,8 @@ const PriceComparison = ({
                           target,
                           source
                         )
+                        const isOutOfStock = calculation <= -100
+
                         return (
                           <tr key={index}>
                             <td>
@@ -183,14 +185,20 @@ const PriceComparison = ({
                               })}
                             </td>
                             <td className="flex">
-                              <Chevron
-                                median={0}
-                                buffer={18}
-                                maxBuffer={30}
-                                value={calculation}
-                              >
-                                {calculation}%
-                              </Chevron>
+                              {isOutOfStock ? (
+                                <span className="badge badge-error gap-2">
+                                  Out of Stock
+                                </span>
+                              ) : (
+                                <Chevron
+                                  median={0}
+                                  buffer={18}
+                                  maxBuffer={30}
+                                  value={calculation}
+                                >
+                                  {calculation}%
+                                </Chevron>
+                              )}
                             </td>
                           </tr>
                         )
