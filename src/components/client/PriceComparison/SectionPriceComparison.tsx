@@ -81,13 +81,13 @@ export default function SectionPriceComparison({settings}: UserDocument) {
                     onClick={e => {
                       e.preventDefault()
                       setComparisons([
-                        ...comparisons,
                         {
                           title: '',
                           source: {name: '', id: ''},
                           target: {name: '', id: ''},
                           items: []
-                        }
+                        },
+                        ...comparisons
                       ])
                     }}
                   >

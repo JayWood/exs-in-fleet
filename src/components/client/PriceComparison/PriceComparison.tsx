@@ -186,7 +186,7 @@ const PriceComparison = ({
                             </td>
                             <td className="flex">
                               {isOutOfStock ? (
-                                <span className="badge badge-error gap-2">
+                                <span className="badge badge-error badge-xs gap-1">
                                   Out of Stock
                                 </span>
                               ) : (
