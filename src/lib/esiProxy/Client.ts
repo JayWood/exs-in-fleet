@@ -22,7 +22,7 @@ import {
   UserDocument
 } from '@/types/collections'
 import { refreshToken } from '@/lib/authEveOnline'
-import { readOne } from '@/lib/db/mongoHelpers'
+import {readMany, readOne} from '@/lib/db/mongoHelpers'
 import { tradeStations } from '@/lib/shared'
 
 export class Client {
@@ -213,28 +213,27 @@ export class Client {
    * Recursively fetch all market orders for a given structure.
    *
    * @param endpoint
-   * @param structure
+   * @param structureId
    * @param page
    * @param allOrders
    * @private
    */
   private async fetchAllMarketOrders(
-    endpoint: string,
-    structure: string,
+    structureId: string,
     page = 1,
     allOrders: MarketOrder[] = []
   ): Promise<MarketOrder[]> {
     let res: NextResponse<MarketOrder[]>
-
-    if (endpoint === 'tradeStation' && structure in tradeStations) {
+    const npcStation = Object.values(tradeStations).find(v => v.location_id.toString() == structureId);
+    if (npcStation) {
       res = await this.authRequest<MarketOrder[]>(
-        `/markets/${tradeStations[structure].region_id}/orders?page=${page}`
+        `/markets/${npcStation.region_id}/orders?page=${page}`
       )
     } else {
-      res = await this.markets('structures', structure + `/?page=${page}`)
+      res = await this.markets('structures', structureId + `/?page=${page}`)
     }
 
-    const data = (await res.json()) as MarketOrder[]
+    const data: MarketOrder[] = await res.json()
     const totalPages = parseInt(res.headers.get('x-pages') || '1')
     // get and log all headers
     for (const [key, value] of res.headers.entries()) {
@@ -250,31 +249,30 @@ export class Client {
     const combined = [
       ...allOrders,
       ...data.filter(i =>
-        endpoint !== 'tradeStation'
-          ? true
-          : i.location_id === tradeStations[structure].location_id
+        npcStation
+          ? i.location_id.toString() === structureId
+          : true
       )
     ]
-    console.info(`Fetched ${combined.length} orders`)
+    console.info(`Fetched ${combined.length} orders - ${page} of ${totalPages}`)
 
     if (page < totalPages) {
-      // wait a few seconds before running again
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      return this.fetchAllMarketOrders(endpoint, structure, page + 1, combined)
+      return this.fetchAllMarketOrders(structureId, page + 1, combined)
     } else {
       return combined
     }
   }
 
   async getAggregatedMarketStats(
-    endpoint: string,
     structureId: string
   ): Promise<NextResponse<AggregatedOrders>> {
     console.info('Checking database cache for market stats...')
-    const rows = await marketCacheGet({ structureId: parseInt(structureId) })
+    const rows = await marketCacheGet({ structureId })
+    console.log(rows.length);
+    // return NextResponse.json('wtf')
     if (!rows || rows.length === 0) {
       console.info('Cache miss - fetching market stats from API...')
-      const allOrders = await this.fetchAllMarketOrders(endpoint, structureId)
+      const allOrders = await this.fetchAllMarketOrders(structureId)
       const result = groupAndAggregate(allOrders, structureId)
       const jsonData = await result.json()
       const documents = Object.entries(jsonData).map(([typeId, stats]) => ({

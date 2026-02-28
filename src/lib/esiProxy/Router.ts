@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Client } from '@/lib/esiProxy/Client'
+import {tradeStations} from "@/lib/shared";
 
 interface RouteConfig {
   pattern: RegExp
@@ -70,14 +71,14 @@ export class Router {
     {
       pattern: /^markets\/structures\/(\d+)\/aggregate$/,
       handler: async (client, match) => {
-        return client.getAggregatedMarketStats('structures', match[1])
+        return client.getAggregatedMarketStats(match[1].toString())
       },
       methods: ['GET']
     },
     {
       pattern: /^markets\/station\/(jita|rens|amarr|hek|dodixie)\/aggregate$/,
       handler: async (client, match) => {
-        return client.getAggregatedMarketStats('tradeStation', match[1])
+        return client.getAggregatedMarketStats(tradeStations[match[1]].location_id.toString())
       },
       methods: ['GET']
     }
