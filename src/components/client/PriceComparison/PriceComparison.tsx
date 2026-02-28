@@ -42,7 +42,7 @@ const calculateDiffPercentage = (target: number, source: number): number => {
 interface PriceComparisonProps {
   value: PriceComparisonType
   onUpdate: (value: PriceComparisonType) => void
-  onDelete: () => void
+  onDelete: (arg0: PriceComparisonType) => void
   structures?: GenericObject[]
   editMode?: boolean
 }
@@ -98,12 +98,12 @@ const PriceComparison = ({
   }, [componentState, prices])
 
   return (
-    <div className="card card-border bg-base-100 card-md shadow-sm">
+    <div className="card card-border bg-base-100 card-md shadow-sm break-inside-avoid h-fit">
       <div className="card-body">
         <div className="flex justify-between items-center group">
           <div className="card-title">{componentState.title}</div>
           <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-            <button className="btn btn-link mb-2 px-0" onClick={onDelete}>
+            <button className="btn btn-link mb-2 px-0" onClick={() => onDelete(value)}>
               <TrashIcon className="w-4 h-4  text-gray-500 hover:text-gray-800" />
             </button>
             <button

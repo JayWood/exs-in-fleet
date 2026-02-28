@@ -12,6 +12,7 @@ import {BuildingStorefrontIcon} from "@heroicons/react/16/solid";
 import StructureManager from "@/components/client/StructureManager";
 import {tradeStations} from "@/lib/shared";
 import core from "ajv/lib/vocabularies/core";
+import {parseJson} from "ajv/lib/runtime/parseJson";
 
 export default function SectionPriceComparison({settings}: UserDocument) {
   // Use a unique ID for the current component.
@@ -59,7 +60,6 @@ export default function SectionPriceComparison({settings}: UserDocument) {
 
                     if (!response.data) {
                       btn.classList.remove('loading', 'loading-xs');
-                      console.log('oops');
                       return;
                     }
                   } catch (err) {
@@ -98,21 +98,24 @@ export default function SectionPriceComparison({settings}: UserDocument) {
             </div>
           </div>
         </div>
+
         <div className="grid w-full gap-4 grid-cols-1 md:grid-cols-2">
           {comparisons?.map(
             (comparison: PriceComparisonType, index: number) => (
               <PriceComparison
-                key={`${index}-${id}`}
+                key={`${id}-${comparison.title}-${comparison.source.id}-${comparison.target.id}`}
                 value={comparison}
                 structures={getStructures()}
-                onDelete={() => {
+                onDelete={(v: PriceComparisonType) => {
                   const newComparisons = comparisons.filter(
-                    (c, i) => i !== index
+                    (c) => c !== v
                   )
+
                   if (newComparisons.length === 0) {
                     return
                   }
-                  axios.post('/api/user', {priceComparisons: newComparisons})
+
+                  axios.post('/api/user', {structures: savedStructures, priceComparisons: newComparisons})
                   setComparisons(newComparisons)
                 }}
                 onUpdate={value => {
