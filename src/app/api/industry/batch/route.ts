@@ -1,5 +1,5 @@
 import { JSONSchemaType } from 'ajv'
-import { BatchType } from '@/lib/db/collections'
+import { BatchType } from '@/types/collections'
 
 export const batchSchema: JSONSchemaType<BatchType> = {
   type: 'object',

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { readMany } from '@/lib/db/mongoHelpers'
-import { InvType } from '@/lib/db/collections'
+import { InvType } from '@/types/collections'
 import { Filter } from 'mongodb'
 
 const searchByName = async (search: string) => {

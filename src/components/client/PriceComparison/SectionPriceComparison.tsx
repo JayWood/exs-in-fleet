@@ -4,7 +4,7 @@ import {
   ArrowPathIcon,
   EllipsisVerticalIcon
 } from '@heroicons/react/24/outline'
-import {GenericObject, PriceComparisonType, UserDocument} from '@/lib/db/collections'
+import {GenericObject, PriceComparisonType, UserDocument} from '@/types/collections'
 import PriceComparison from '@/components/client/PriceComparison/PriceComparison'
 import {useEffect, useId, useState} from 'react'
 import axios from 'axios'
@@ -119,7 +119,7 @@ export default function SectionPriceComparison({settings}: UserDocument) {
                   const newComparisons = comparisons.map((c, i) =>
                     i === index ? value : c
                   )
-                  axios.post('/api/user', {savedStructures, priceComparisons: newComparisons})
+                  axios.post('/api/user', {structures: savedStructures, priceComparisons: newComparisons})
                   setComparisons(newComparisons)
                 }}
               />

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUserId } from '@/lib/shared'
 import { Ajv } from 'ajv'
-import { PriceComparisonType, UserDocument } from '@/lib/db/collections'
+import { PriceComparisonType, UserDocument } from '@/types/collections'
 import { readOne, updateOne } from '@/lib/db/mongoHelpers'
 
 export const priceComparisonSchema = {

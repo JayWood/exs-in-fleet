@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { readOne } from '@/lib/db/mongoHelpers'
-import { UserDocument } from '@/lib/db/collections'
+import { UserDocument } from '@/types/collections'
 import { refreshToken } from '@/lib/authEveOnline'
 
 export async function proxy(request: NextRequest) {

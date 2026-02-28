@@ -1,7 +1,7 @@
 import { getMarketGroupTree } from '@/lib/db/market'
 import { createProjection, readOne } from '@/lib/db/mongoHelpers'
 import { cookies } from 'next/headers'
-import { UserDocument } from '@/lib/db/collections'
+import { UserDocument } from '@/types/collections'
 import SectionPriceComparison from '@/components/client/PriceComparison/SectionPriceComparison'
 import MarketTree from '@/components/client/MarketTree'
 import { EllipsisVerticalIcon } from '@heroicons/react/24/outline'

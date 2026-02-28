@@ -1,5 +1,5 @@
 import { createProjection, readOne } from '@/lib/db/mongoHelpers'
-import { UserDocument } from '@/lib/db/collections'
+import { UserDocument } from '@/types/collections'
 import { cookies } from 'next/headers'
 import SectionPriceComparison from '@/components/client/PriceComparison/SectionPriceComparison'
 

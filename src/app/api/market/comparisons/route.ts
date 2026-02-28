@@ -7,7 +7,7 @@ import {
   InvTypeDocument,
   MarketCache,
   MarketCacheDocument
-} from '@/lib/db/collections'
+} from '@/types/collections'
 
 export type priceCompareParams = {
   sourceSystemId?: number

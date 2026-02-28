@@ -20,7 +20,7 @@ import {
   MarketCacheDocument,
   MarketCacheInsert,
   UserDocument
-} from '@/lib/db/collections'
+} from '@/types/collections'
 import { refreshToken } from '@/lib/authEveOnline'
 import { readOne } from '@/lib/db/mongoHelpers'
 import { tradeStations } from '@/lib/shared'

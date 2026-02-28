@@ -1,4 +1,4 @@
-import { IndustryActivityMaterial } from '@/lib/db/collections'
+import { IndustryActivityMaterial } from '@/types/collections'
 import { NextRequest } from 'next/server'
 
 export type eveImageTypes = {

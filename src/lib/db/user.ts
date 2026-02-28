@@ -1,5 +1,5 @@
 import { EvePayload } from '@/lib/authEveOnline'
-import { UserDocument, UserInsert } from '@/lib/db/collections'
+import { UserDocument, UserInsert } from '@/types/collections'
 import { readOne, updateOne } from '@/lib/db/mongoHelpers'
 
 export const collection: string = 'eveUsers'

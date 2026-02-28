@@ -7,7 +7,7 @@ import {
   readMany,
   writeMany
 } from '@/lib/db/mongoHelpers'
-import { MarketCacheDocument } from '@/lib/db/collections'
+import { MarketCacheDocument } from '@/types/collections'
 
 export type OrderStats = {
   weightedAverage: string

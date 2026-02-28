@@ -1,5 +1,5 @@
 import { readMany } from '@/lib/db/mongoHelpers'
-import { IndustryActivityMaterialDocument } from '@/lib/db/collections'
+import { IndustryActivityMaterialDocument } from '@/types/collections'
 
 export const ACTIVITIES: Record<string, number | string>[] = [
   {

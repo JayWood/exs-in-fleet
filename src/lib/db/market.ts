@@ -1,4 +1,4 @@
-import { InvMarketGroup } from '@/lib/db/collections'
+import { InvMarketGroup } from '@/types/collections'
 import { createProjection, readMany } from '@/lib/db/mongoHelpers'
 
 export interface MarketGroupNode extends InvMarketGroup {

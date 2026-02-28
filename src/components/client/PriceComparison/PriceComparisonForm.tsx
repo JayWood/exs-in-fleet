@@ -10,7 +10,7 @@ import {
   InvTypeDocument,
   PriceComparisonType,
   UserSettings
-} from '@/lib/db/collections'
+} from '@/types/collections'
 
 interface PriceComparisonFormProps {
   onChange: (data: PriceComparisonType) => void

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { AggregatedOrders, marketCacheGet, marketCacheSet } from '@/lib/market'
-import { MarketCache, MarketCacheInsert } from '@/lib/db/collections'
+import { MarketCache, MarketCacheInsert } from '@/types/collections'
 
 const marketUrl = 'https://market.fuzzwork.co.uk/aggregates/'
 export const fuzzworkStructures = [

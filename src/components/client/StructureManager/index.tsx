@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {GenericObject} from "@/lib/db/collections";
+import {GenericObject} from "@/types/collections";
 import {tradeStations} from "@/lib/shared";
 
 interface StructureManagerProps {

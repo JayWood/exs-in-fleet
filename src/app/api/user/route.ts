@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUserId } from '@/lib/shared'
 import { readOne, updateOne } from '@/lib/db/mongoHelpers'
 import { Ajv, JSONSchemaType } from 'ajv'
-import { UserDocument, UserSettings } from '@/lib/db/collections'
+import { UserDocument, UserSettings } from '@/types/collections'
 
 const userSettingsSchema: JSONSchemaType<UserSettings> = {
   type: 'object',
