@@ -77,7 +77,7 @@ const PriceComparisonForm = ({value, onSubmit, onChange, structures}: PriceCompa
               value={value?.source?.id || ''}
               onChange={e => {
                 const selectedStructure = structures?.find(
-                  structure => structure.id === e.target.value
+                  structure => structure.id == e.target.value
                 )
                 onChange({
                   ...formState,
@@ -115,7 +115,7 @@ const PriceComparisonForm = ({value, onSubmit, onChange, structures}: PriceCompa
               value={value?.target?.id || ''}
               onChange={e => {
                 const selectedStructure = structures?.find(
-                  structure => structure.id === e.target.value
+                  structure => structure.id == e.target.value
                 )
                 onChange({
                   ...formState,
