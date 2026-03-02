@@ -48,6 +48,7 @@ export default function SectionPriceComparison({settings}: UserDocument) {
             <button className="btn btn-xs btn-link p-0 mr-6">
               <ArrowPathIcon
                 onClick={async () => {
+                  // TODO: Update this to call endpoints based on structure configuration.
                   try {
                     const btn = document.activeElement as HTMLButtonElement
                     btn.classList.add('loading', 'loading-xs')
