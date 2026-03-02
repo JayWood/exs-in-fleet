@@ -25,18 +25,17 @@ function getProfitableItems(sourceItems: MarketCacheDocument[], targetItems: Mar
       const targetMinSell = parseInt(targetItem.sell.min);
       const profit = targetMinBuy - sourceMinSell;
 
-      if ( profit <= 0 ) return null;
+      if ( profit <= 0 || sourceMinSell <= 0 || targetMinBuy <= 0 ) return null;
 
       return {
-        source: sourceItem.typeId,
-        target: targetItem.typeId,
+        typeId: sourceItem.typeId,
         sourceMinBuy,
         sourceMinSell,
         targetMinBuy,
         targetMinSell,
         sourceVolume: parseInt(sourceItem.buy.volume),
         targetVolume: parseInt(targetItem.buy.volume),
-        profit: targetMinBuy - sourceMinSell,
+        profit,
       }
     })
     .filter(Boolean);
