@@ -25,7 +25,7 @@ function getProfitableItems(sourceItems: MarketCacheDocument[], targetItems: Mar
       const targetMinSell = parseInt(targetItem.sell.min);
       const profit = targetMinBuy - sourceMinSell;
 
-      if ( profit <= 0 || sourceMinSell <= 0 || targetMinBuy <= 0 ) return null;
+      if ( profit <= 1000000 || sourceMinSell <= 0 || targetMinBuy <= 0 ) return null;
 
       return {
         typeId: sourceItem.typeId,
@@ -47,6 +47,7 @@ export async function GET(request: NextRequest) {
   const {searchParams} = new URL(request.url)
   const sourceId = searchParams.get('source')
   const targetId = searchParams.get('target')
+  const method = searchParams.get('method') || 'export';
 
   if (!sourceId || !targetId) {
     console.error('Source or target ID is missing');
